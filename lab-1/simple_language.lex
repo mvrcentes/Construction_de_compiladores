@@ -4,17 +4,17 @@
 
 %%
 
-[a-zA-Z][a-zA-Z0-9]*    { yylval.str = strdup(yytext); return ID; }
+[ \t]            ;   // Ignorar espacios y tabs
+[a-zA-Z_][a-zA-Z0-9_]*    { yylval.str = strdup(yytext); return VARIABLE; }
 [0-9]+                   { yylval.num = atoi(yytext); return NUMBER; }
+\n                       { return EOL; }
 "+"                      { return '+'; }
 "-"                      { return '-'; }
 "*"                      { return '*'; }
 "/"                      { return '/'; }
 "="                      { return '='; }
-"\n"                     { return '\n'; }
-[ \t]                    ;  // skip whitespace
 
-.                        { return yytext[0]; }
+.                { printf("Caracter no reconocido: %s\n", yytext); return yytext[0]; }
 
 %%
 

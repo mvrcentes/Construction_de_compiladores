@@ -16,7 +16,7 @@ COPY . .
 
 # Compile Lex and Yacc code
 RUN flex simple_language.lex
-RUN bison -d simple_language.y
+RUN bison -d simple_language.y -o y.tab.c
 RUN gcc lex.yy.c y.tab.c -o compiler
 
 # Run the compiler
