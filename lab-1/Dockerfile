@@ -20,4 +20,4 @@ RUN bison -d simple_language.y -o y.tab.c
 RUN gcc lex.yy.c y.tab.c -o compiler
 
 # Run the compiler
-CMD ["./compiler"]
+CMD ["sh", "-c", "./compiler < /usr/src/app/input.txt"]
