@@ -28,6 +28,8 @@ chmod +x script1.sh
 ./script1.sh
 ```
 
+![](https://github.com/mvrcentes/Construction_de_compiladores/blob/Lab-1/lab-1/images/entregable-1.png?raw=true)
+
 ### 2. Crear un programa de operación
 
 #### Valores probados por el script 
@@ -50,6 +52,8 @@ chmod +x script2.sh
 ```bash
 ./script2.sh
 ```
+![](https://github.com/mvrcentes/Construction_de_compiladores/blob/Lab-1/lab-1/images/entregable-2.png?raw=true)
+
 ### 3. Agregar manejo de errores
 
 #### Valores probados por el script 
@@ -68,6 +72,8 @@ chmod +x script3.sh
 ```bash
 ./script3.sh
 ```
+
+![](https://github.com/mvrcentes/Construction_de_compiladores/blob/Lab-1/lab-1/images/entregable-3.png?raw=true)
 
 ### 4. Experimentar con la precedencia
 
@@ -91,6 +97,8 @@ chmod +x script4.sh
 ./script3.sh
 ```
 
+![](https://github.com/mvrcentes/Construction_de_compiladores/blob/Lab-1/lab-1/images/entregable-4.png?raw=true)
+
 ## Rubrica 
 | Puntos | Requisito | Check | Comentario |
 |----|----|----|----|
@@ -98,7 +106,7 @@ chmod +x script4.sh
 15 | Crear un programa de operación | ✅ | 
 15 | Agregar manejo de errores | ✅ | 
 15 | Experimentar con la precedencia | ✅ | 
-10 | Completar todas las tareas | |
-10 | Respuestas comprensibles y claras | |
-10 | Seguimiento de instrucciones | | 
-10 | Organización y presentación adecuada | |
+10 | Completar todas las tareas | ✅ | todos los programas están
+10 | Respuestas comprensibles y claras | ✅ | presentación bien estructurada
+10 | Seguimiento de instrucciones | ✅ | paso a paso | 
+10 | Organización y presentación adecuada | ✅ | apoco no se ve bonito | 
