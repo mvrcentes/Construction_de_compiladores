@@ -1,5 +1,7 @@
 # Laboratorio No. 1
 
+[PDF](https://github.com/mvrcentes/Construction_de_compiladores/blob/Lab-1/lab-1/Laboratorio_No1.pdf)
+
 ## Requisitos
 1. Terminal con Bash, Sh, Zsh, Fish
 2. Docker 
