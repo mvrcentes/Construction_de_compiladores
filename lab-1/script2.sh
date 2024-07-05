@@ -9,10 +9,8 @@ BUILD_CONTEXT=$(pwd)
 # Archivo temporal para almacenar las expresiones
 INPUT_FILE="input.txt"
 
-# Mensaje de estado
-echo "Construyendo la imagen Docker..."
-
 # Construye la imagen Docker
+echo "Construyendo la imagen Docker..."
 docker build -t $IMAGE_NAME $BUILD_CONTEXT
 
 # Verifica si la construcción fue exitosa
@@ -20,25 +18,23 @@ if [ $? -ne 0 ]; then
   echo "Error: La construcción de la imagen Docker falló."
   exit 1
 fi
-
-# Mensaje de estado
 echo "La imagen Docker ha sido construida con éxito."
 
 # Hardcodear las expresiones
 cat << EOF > $INPUT_FILE
-a = 5
-b = 10
+a = 10
+b = 20
 c = a + b
+d = c * 2
+e = d - 5
+f = e / 3
 EOF
 
-# Mensaje de estado
-echo "Ejecutando el contenedor Docker..."
-
 # Ejecuta el contenedor Docker, montando el archivo temporal en /usr/src/app/input.txt dentro del contenedor
+echo "Ejecutando el contenedor Docker..."
 docker run --rm -it -v $(pwd)/$INPUT_FILE:/usr/src/app/input.txt $IMAGE_NAME
 
 # Limpia el archivo temporal después de la ejecución
 rm $INPUT_FILE
 
-# Mensaje de estado
 echo "Ejecución completada."
