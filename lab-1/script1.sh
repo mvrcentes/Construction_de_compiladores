@@ -42,3 +42,9 @@ rm $INPUT_FILE
 
 # Mensaje de estado
 echo "Ejecución completada."
+
+# Referencias
+# Devpool. (18 de 1 de 2019). stackoverflow. Obtenido de Running a script inside a docker container using shell script: https://stackoverflow.com/questions/31578446/running-a-script-inside-a-docker-container-using-shell-script
+# Docker. (n/a). Docker Community Forums . Obtenido de Executing the Shell Script through Dockerfile: https://forums.docker.com/t/executing-the-shell-script-through-dockerfile/134152/1
+# ChatGPT 
+# COPILOT 
