@@ -10,7 +10,7 @@
 
 Para que funcionen los scriprs estar dentro de la carpte de `lab-1`
 
-### 1. Crear un porgrma de asignación 
+### 1. Crear un programa de asignación 
 
 #### Valores probados port el script 
 | Expresiones |
