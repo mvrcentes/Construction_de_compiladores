@@ -40,13 +40,24 @@ chmod +x script3.sh
 ./script3.sh
 ```
 
+### 3. Experimentar con la precedencia
+
+1. Darle permisos al script con el siguiente comando
+```bash
+chmod +x script4.sh
+```
+2. Correr el script 
+```bash
+./script3.sh
+```
+
 ## Rubrica 
 | Puntos | Requisito | Check | Comentario |
 |----|----|----|----|
 10 | Crear un programa de asignaciónn | ✅ | 
 15 | Crear un programa de operación | ✅ | 
 15 | Agregar manejo de errores | ✅ | 
-15 | Experimentar con la precedencia | | 
+15 | Experimentar con la precedencia | ✅ | 
 10 | Completar todas las tareas | |
 10 | Respuestas comprensibles y claras | |
 10 | Seguimiento de instrucciones | | 
