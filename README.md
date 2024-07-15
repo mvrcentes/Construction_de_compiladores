@@ -199,7 +199,7 @@ python3 Driver.py program_13_14.txt
 python3 Driver.py program_15.txt
 ```
 
-![](https://github.com/mvrcentes/Construction_de_compiladores/blob/Lab-2/lab-2/Entregables/Images/entregable-10-15.png)
+![](https://github.com/mvrcentes/Construction_de_compiladores/blob/Lab-2/lab-2/Entregables/Images/entregable-15.png)
 
 ## Rubrica 
 | Puntos | Requisito | Check | Comentario |
