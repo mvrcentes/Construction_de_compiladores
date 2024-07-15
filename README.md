@@ -67,7 +67,7 @@ python3 Driver.py program_4.txt
 ![](https://github.com/mvrcentes/Construction_de_compiladores/blob/Lab-2/lab-2/Entregables/Images/entregable-4.png)
 
 ### 5.	Manejo de errores léxicos 
-
+![](https://github.com/mvrcentes/Construction_de_compiladores/blob/Lab-2/lab-2/Entregables/Images/entregable-5.png)
 
 ### 6.	Programa con paréntesis y cambio de precedencia en operadores 
 | Epresión | Esperado
@@ -175,8 +175,31 @@ python3 Driver.py program_10_11.txt
 ![](https://github.com/mvrcentes/Construction_de_compiladores/blob/Lab-2/lab-2/Entregables/Images/entregable-10-12.png)
 
 ### 13.	Soporte de funciones definidas por el usuario 
+#### Correr el programa
+```bash 
+python3 Driver.py program_13_14.txt
+```
+![](https://github.com/mvrcentes/Construction_de_compiladores/blob/Lab-2/lab-2/Entregables/Images/entregable-13-14.png)
+
 ### 14.	Programa que defina y llame una función 
+#### Correr el programa
+```bash 
+python3 Driver.py program_13_14.txt
+```
+![](https://github.com/mvrcentes/Construction_de_compiladores/blob/Lab-2/lab-2/Entregables/Images/entregable-13-14.png)
+
 ### 15.	Implementación de sistema de tipos
+```bash
+"hola"+"mundo"
+2*"Hola" + 2*"Mundo"
+```
+
+#### Correr el programa
+```bash 
+python3 Driver.py program_15.txt
+```
+
+![](https://github.com/mvrcentes/Construction_de_compiladores/blob/Lab-2/lab-2/Entregables/Images/entregable-10-15.png)
 
 ## Rubrica 
 | Puntos | Requisito | Check | Comentario |
