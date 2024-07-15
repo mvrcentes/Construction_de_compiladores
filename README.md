@@ -179,14 +179,14 @@ python3 Driver.py program_10_11.txt
 ```bash 
 python3 Driver.py program_13_14.txt
 ```
-![](https://github.com/mvrcentes/Construction_de_compiladores/blob/Lab-2/lab-2/Entregables/Images/entregable-13-14.png)
+![](https://github.com/mvrcentes/Construction_de_compiladores/blob/Lab-2/lab-2/Entregables/Images/entregable-14.png)
 
 ### 14.	Programa que defina y llame una función 
 #### Correr el programa
 ```bash 
 python3 Driver.py program_13_14.txt
 ```
-![](https://github.com/mvrcentes/Construction_de_compiladores/blob/Lab-2/lab-2/Entregables/Images/entregable-13-14.png)
+![](https://github.com/mvrcentes/Construction_de_compiladores/blob/Lab-2/lab-2/Entregables/Images/entregable-14.png)
 
 ### 15.	Implementación de sistema de tipos
 ```bash

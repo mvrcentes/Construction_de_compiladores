@@ -1,15 +1,26 @@
 import sys
 from antlr4 import *
+from antlr4.error.ErrorListener import ErrorListener
 from MiniLangLexer import MiniLangLexer
 from MiniLangParser import MiniLangParser
 from MiniLangVisitor import MiniLangVisitor
 
-class MyVisitor(MiniLangVisitor):
+class LexicalErrorListener(ErrorListener):
+
+    def syntaxError(self, recognizer, offendingSymbol, line, column, msg, e):
+        print(f"Error lexico en la linea {line}:{column} - {msg}")
+
+class CustomLexer(MiniLangLexer):
+
+    def recover(self, re):
+        self._input.consume()
+
+class EvalVisitor(MiniLangVisitor):
 
     def __init__(self):
-        super(MyVisitor, self).__init__()
-        self.variables = {}  # Para almacenar variables asignadas
-        self.functions = {}  # Para almacenar funciones definidas por el usuario
+        super(EvalVisitor, self).__init__()
+        self.variables = {}
+        self.functions = {}
         self.res = None
 
     def visitProg(self, ctx: MiniLangParser.ProgContext):
@@ -90,7 +101,7 @@ class MyVisitor(MiniLangVisitor):
         if name in self.variables:
             return self.variables[name]
         else:
-            raise ValueError(f"Variable '{name}' no definida.")
+            raise ValueError(f"Variable '{name}' not defined.")
         
     def visitString(self, ctx: MiniLangParser.StringContext):
         return ctx.STRING().getText().strip('"')
@@ -101,10 +112,10 @@ class MyVisitor(MiniLangVisitor):
     def visitIfStatement(self, ctx: MiniLangParser.IfStatementContext):
         condition = self.visit(ctx.expr())
         if condition:
-            for stat in ctx.stat()[:len(ctx.stat()) - 1]:
+            for stat in ctx.stat()[:len(ctx.stat())-1]:
                 self.visit(stat)
         elif ctx.ELSE() is not None:
-            for stat in ctx.stat()[len(ctx.stat()) - 1:]:
+            for stat in ctx.stat()[len(ctx.stat())-1:]:
                 res = self.visit(stat)
 
     def visitWhileStatement(self, ctx: MiniLangParser.WhileStatementContext):
@@ -115,19 +126,44 @@ class MyVisitor(MiniLangVisitor):
     def visitFuncDef(self, ctx: MiniLangParser.FuncDefContext):
         name = ctx.ID(0).getText()
         params = [param.getText() for param in ctx.ID()[1:]]
-        self.functions[name] = (params, ctx.stat())
+        self.functions[name] = [params, ctx.stat()]
+
+        #Impresion de asignacion
+        print(f"Created func: {name}")
+
+    def visitFuncCall(self, ctx: MiniLangParser.FuncCallContext):
+        name = ctx.ID().getText()
+        if name not in self.functions:
+            raise ValueError(f"Function '{name}' not defined.")
+        
+        params, block = self.functions[name]
+
+        if len(params) != len(ctx.expr()):
+            raise ValueError(f"Invalid amount of params for '{name}'.")
+        
+        current_vars = self.variables.copy()
+        
+        self.variables.update({param: self.visit(arg) for param, arg in zip(params, ctx.expr())})
+        
+        for stat in block:
+            self.visit(stat)
+        
+        self.variables = current_vars
 
 def main(argv):
     input_file = argv[1]
     with open(input_file, encoding='utf-8') as file:
         input_stream = InputStream(file.read())
     
-    lexer = MiniLangLexer(input_stream)
+    lexer = CustomLexer(input_stream)
+    lexer.removeErrorListeners()
+    lexer.addErrorListener(LexicalErrorListener())
+
     stream = CommonTokenStream(lexer)
     parser = MiniLangParser(stream)
     tree = parser.prog()  # Analizar la entrada utilizando la regla 'prog'
 
-    visitor = MyVisitor()
+    visitor = EvalVisitor()
     visitor.visit(tree)
 
 if __name__ == '__main__':

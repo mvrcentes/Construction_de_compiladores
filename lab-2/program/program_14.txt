@@ -1,0 +1,6 @@
+func test (a)
+  x=a
+endfunc
+
+test (1)
+
