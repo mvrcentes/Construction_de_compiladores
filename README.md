@@ -22,6 +22,7 @@ docker run --rm -ti -v "$(pwd)/program:/program" lab2-image
 ```bash 
 python3 Driver.py program_1.txt
 ```
+![](https://github.com/mvrcentes/Construction_de_compiladores/blob/Lab-2/lab-2/Entregables/Images/entregable-1.png)
 
 ### 2. Crear un programa con una operación simple
 
@@ -36,12 +37,16 @@ python3 Driver.py program_1.txt
 python3 Driver.py program_1.txt
 ```
 
+![](https://github.com/mvrcentes/Construction_de_compiladores/blob/Lab-2/lab-2/Entregables/Images/entregable-2.png)
+
 ### 3.	Expresiones complejas 
 | Epresión | Esperado |
 | ---- | ---- | 
 | 5 + 3 * 2 | 11 |
 | 10 - 5 / 5 | 9 | 
 | 100 / 25 * 2 | 8 | 
+
+![](https://github.com/mvrcentes/Construction_de_compiladores/blob/Lab-2/lab-2/Entregables/Images/entregable-3.png)
 
 #### Correr el programa
 ```bash 
@@ -59,6 +64,7 @@ python3 Driver.py program_3.txt
 ```bash 
 python3 Driver.py program_4.txt
 ```
+![](https://github.com/mvrcentes/Construction_de_compiladores/blob/Lab-2/lab-2/Entregables/Images/entregable-4.png)
 
 ### 5.	Manejo de errores léxicos 
 
@@ -70,6 +76,8 @@ python3 Driver.py program_4.txt
 | (2 + 2) * 10 | 40
 | 2 + 2 / 2 | 3 | 
 | (2 + 2) / 2 | 2 |
+
+![](https://github.com/mvrcentes/Construction_de_compiladores/blob/Lab-2/lab-2/Entregables/Images/entregable-6.png)
 
 #### Correr el programa
 ```bash 
@@ -89,6 +97,8 @@ python3 Driver.py program_6.txt
 python3 Driver.py program_7.txt
 ```
 
+![](https://github.com/mvrcentes/Construction_de_compiladores/blob/Lab-2/lab-2/Entregables/Images/entregable-7.png)
+
 ### 8.	Programa con operadores de comparación 
 | Epresión |
 | ---- | 
@@ -103,6 +113,7 @@ python3 Driver.py program_7.txt
 ```bash 
 python3 Driver.py program_8_9.txt
 ```
+![](https://github.com/mvrcentes/Construction_de_compiladores/blob/Lab-2/lab-2/Entregables/Images/entregable-8-9.png)
 
 ### 9.	Programa experimentando con operadores de comparación 
 | Epresión | Esperado | 
@@ -118,6 +129,7 @@ python3 Driver.py program_8_9.txt
 ```bash 
 python3 Driver.py program_8_9.txt
 ```
+![](https://github.com/mvrcentes/Construction_de_compiladores/blob/Lab-2/lab-2/Entregables/Images/entregable-8-9.png)
 
 ### 10.	Estructuras de control como “if” y “while” 
 
@@ -146,7 +158,7 @@ endif
 ```bash 
 python3 Driver.py program_10_11.txt
 ```
-
+![](https://github.com/mvrcentes/Construction_de_compiladores/blob/Lab-2/lab-2/Entregables/Images/entregable-10-11.png)
 
 ### 12.	Programa que utilice estrcutra “while” 
 ```bash
@@ -160,6 +172,8 @@ endwhile
 ```bash 
 python3 Driver.py program_10_11.txt
 ```
+![](https://github.com/mvrcentes/Construction_de_compiladores/blob/Lab-2/lab-2/Entregables/Images/entregable-10-12.png)
+
 ### 13.	Soporte de funciones definidas por el usuario 
 ### 14.	Programa que defina y llame una función 
 ### 15.	Implementación de sistema de tipos
