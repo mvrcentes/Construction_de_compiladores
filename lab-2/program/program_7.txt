@@ -1,0 +1,4 @@
+2 + 2 * 10 // Operacion 1
+(2 + 2) * 10 // Operacion 2 
+2 + 2 / 2 // Operacion 3
+(2 + 2) / 2  // Operacion 4

@@ -1,4 +1,4 @@
-# Generated from MiniLang.g4 by ANTLR 4.13.1
+# Generated from program/MiniLang.g4 by ANTLR 4.13.1
 from antlr4 import *
 if "." in __name__:
     from .MiniLangParser import MiniLangParser
@@ -14,6 +14,15 @@ class MiniLangListener(ParseTreeListener):
 
     # Exit a parse tree produced by MiniLangParser#prog.
     def exitProg(self, ctx:MiniLangParser.ProgContext):
+        pass
+
+
+    # Enter a parse tree produced by MiniLangParser#If.
+    def enterIf(self, ctx:MiniLangParser.IfContext):
+        pass
+
+    # Exit a parse tree produced by MiniLangParser#If.
+    def exitIf(self, ctx:MiniLangParser.IfContext):
         pass
 
 
@@ -86,6 +95,15 @@ class MiniLangListener(ParseTreeListener):
 
     # Exit a parse tree produced by MiniLangParser#int.
     def exitInt(self, ctx:MiniLangParser.IntContext):
+        pass
+
+
+    # Enter a parse tree produced by MiniLangParser#Comp.
+    def enterComp(self, ctx:MiniLangParser.CompContext):
+        pass
+
+    # Exit a parse tree produced by MiniLangParser#Comp.
+    def exitComp(self, ctx:MiniLangParser.CompContext):
         pass
 
 
