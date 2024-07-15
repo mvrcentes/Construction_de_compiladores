@@ -1,6 +1,6 @@
 # Laboratorio No. 2 
 
-[PDF]()
+[PDF](https://github.com/mvrcentes/Construction_de_compiladores/blob/Lab-2/lab-2/Entregables/Laboratorio_No2.pdf)
 
 ## Entregables 
 
