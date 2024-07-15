@@ -2,18 +2,22 @@ grammar MiniLang;
 
 prog:   stat+ ;
 
-stat:   IF expr THEN stat+ (ELSE stat+)? ENDIF NEWLINE # If
-    |   expr NEWLINE                 # printExpr
-    |   ID '=' expr NEWLINE          # assign
-    |   NEWLINE                      # blank
+stat:   expr NEWLINE                       # printExpr
+    |   ID '=' expr NEWLINE                # assign
+    |   IF expr THEN stat+ ('else' stat+)? ENDIF NEWLINE        # IfStatement
+    |   WHILE expr DO stat+ ENDWHILE NEWLINE              # WhileStatement
+    |   FUNC ID '(' (ID (',' ID)*)? ')' stat+ ENDFUNC NEWLINE # FuncDef
+    |   ID '(' (expr (',' expr)*)? ')' NEWLINE                 # FuncCall
+    |   NEWLINE                            # blank
     ;
 
-expr: '(' expr ')'                   #parens
-    |   expr ('*'|'/') expr          # MulDiv
-    |   expr ('+'|'-') expr          # AddSub
-    |   INT                          # int
-    |   ID                           # id
-    |   expr ('=='|'!='|'<'|'>'|'<='|'>=') expr  # Comp
+expr:   expr ('*'|'/') expr                # MulDiv
+    |   expr ('+'|'-') expr                # AddSub
+    |   expr ('=='|'!='|'<'|'>'|'<='|'>=') expr  # Comparison
+    |   INT                                # int
+    |   STRING                             # string
+    |   ID                                 # id
+    |   '(' expr ')'                       # parens
     ;
 
 MUL : '*' ; // define token for multiplication
@@ -26,13 +30,22 @@ LT  : '<' ;  // define token for less than comparison
 GT  : '>' ;  // define token for greater than comparison
 LEQ : '<=' ; // define token for less than or equal comparison
 GEQ : '>=' ; // define token for greater than or equal comparison
-ID  : [a-zA-Z]+ ; // match identifiers
-INT : [0-9]+ ; // match integers
-IF  : 'if' ; // define token if
-THEN  : 'then' ; // define token then
-ELSE  : 'else' ; // define token else
-ENDIF  : 'endif' ; // define token endif
-NEWLINE:'\r'? '\n' ; // return newlines to parser (is end-statement signal)
 
+IF : 'if' ;     // define token if
+THEN : 'then' ; // define token then
+ELSE : 'else' ; // define token else
+ENDIF : 'endif' ; // define token endif
+WHILE : 'while' ; // define token while
+DO : 'do' ; // define token do
+ENDWHILE : 'endwhile' ; // define token endwhile
+FUNC : 'func' ;         // define token func
+ENDFUNC : 'endfunc' ;   // define token endfunc
+
+ID  : [a-zA-Z]+ ; // match identifiers
+STRING : '"' (~['"'|"\r\n"])* '"' ; // string support
+INT : [0-9]+ ; // match integers
+NEWLINE:'\r'? '\n' ; // return newlines to parser (is end-statement signal)
 WS  : [ \t]+ -> skip ; // toss out whitespace
-LINE_COMMENT : '//' ~[\r\n]* -> skip ; // toss out line comment
+
+// Regla para comentarios de una sola linea
+LINE_COMMENT : '//' ~[\r\n]* -> skip ;
