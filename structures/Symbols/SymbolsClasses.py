@@ -61,3 +61,7 @@ class Function(Symbol):
     # Set the return type of the function until it is known
     def set_return_type(self, return_type: Type):
         self.type = return_type
+    
+    def __repr__(self):
+        params_str = ", ".join(str(param) for param in self.parameters)
+        return f"Function (return_type={self.type}, parameters=[{params_str}])"
