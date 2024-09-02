@@ -87,7 +87,7 @@ class SymbolGenerator(CompiScriptLanguageVisitor):
             value, type = self.visit(ctx.expression())
             self.context_manager.assign(var_name, value, type)
 
-        return None
+        return None, VoidType()  # Return a placeholder value and type
 
 
     # Visit a parse tree produced by CompiScriptLanguageParser#expressionStatement.
@@ -135,7 +135,7 @@ class SymbolGenerator(CompiScriptLanguageVisitor):
         self.context_manager.enter_context(block_name)
         
         # Visit all the statements inside the block
-        value, return_type = self.visit(ctx.block()) if self.visit(ctx.block()) else (None, VoidType())
+        value, return_type = self.visit(ctx.block())
         
         # Exit the block context, returning to the parent context
         self.context_manager.exit_context()
@@ -275,7 +275,7 @@ class SymbolGenerator(CompiScriptLanguageVisitor):
         return_values = [self.visit(declaration) for declaration in ctx.declaration()]
 
         # If there are return values, return the first one; otherwise, return None
-        return return_values[0] if return_values else None
+        return return_values[0] if return_values != [None] else (None, VoidType())
 
 
     # Visit a parse tree produced by CompiScriptLanguageParser#expression.
@@ -293,7 +293,6 @@ class SymbolGenerator(CompiScriptLanguageVisitor):
             print("Assignment contains a call.")
             self.visit(ctx.call())
         else:
-
             # Handling simple variable assignment
             var_name = ctx.IDENTIFIER().getText()
             
@@ -308,7 +307,7 @@ class SymbolGenerator(CompiScriptLanguageVisitor):
 
             return value, type # Return the value for chained assignments
 
-        return None
+        return None, VoidType() # Return a placeholder value and type
 
 
     # Visit a parse tree produced by CompiScriptLanguageParser#logicOrAssigment.
@@ -530,7 +529,9 @@ class SymbolGenerator(CompiScriptLanguageVisitor):
                 self.context_manager.enter_context(func_name)
 
                 # Evaluate the arguments
-                arguments = self.visit(ctx.getChild(i+1)) if ctx.getChild(i+1) else []
+                arguments = self.visit(ctx.arguments()) if ctx.arguments() else []
+                i = i + 3 if ctx.arguments() else i + 2 # Skip the arguments and the closing parenthesis
+
                 if len(arguments) != len(function_symbol.get_parameters()):
                     raise TypeError(f"Function {func_name} expected {len(function_symbol.get_parameters())} arguments, got {len(arguments)}.")
 
@@ -541,12 +542,8 @@ class SymbolGenerator(CompiScriptLanguageVisitor):
                 # Visit the function body (block) in this new context
                 value, return_type = self.visit(function_symbol.get_block())
 
-                print(f"Function {func_name} returned {value} (Type: {return_type})")
-
                 # Exit the function call context
                 self.context_manager.exit_context()
-
-                i = i + 3  # Skip the closing parenthesis ')'
 
                 # Update the primary_value and primary_type to reflect the function's return
                 primary_value, primary_type = value, return_type
@@ -674,7 +671,7 @@ class SymbolGenerator(CompiScriptLanguageVisitor):
         # Add the function to the symbol table in the current context
         self.context_manager.define(function_symbol)
 
-        return None
+        return None, VoidType()
 
 
     # Visit a parse tree produced by CompiScriptLanguageParser#parameters.
