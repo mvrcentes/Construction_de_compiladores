@@ -23,25 +23,26 @@ class SymbolsTable:
             raise KeyError(f"Symbol {name} is not defined.")
         
         # Assign value and type
-        symbol.value = value
-        symbol.type  = type
+        symbol.set_value(value)
+        symbol.set_type(type)
 
     def exists(self, name: str) -> bool:
         """Check if a symbol exists in the table."""
         return name in self.table
     
-    def print_table(self):
+    def print_table(self, contex_name: str):
         """Prints the symbol table in a legible format."""
         if not self.table:
             print("Symbol table is empty.")
             return
         
-        print("Symbol Table:")
+        print(f"Symbol Table {contex_name}:")
         print(f"{'Name':<15} {'Info':<15}")
         print("-" * 45)
         for name, symbol in self.table.items():
             symbol_info = str(symbol)
             print(f"{name:<15} {symbol_info:<15}")
+        print("\n")
 
     def __repr__(self):
         return str(self.table)
