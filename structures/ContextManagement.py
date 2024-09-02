@@ -19,6 +19,9 @@ class Context:
 
     def exists(self, name: str):
         return self.symbol_table.exists(name)
+    
+    def print_symbol_table(self):
+        self.symbol_table.print_table(self.name)
 
     def __repr__(self):
         return f"Context(name={self.name}, symbols={self.symbol_table})"
@@ -30,23 +33,27 @@ class ContextManager:
         self.current_context = self.global_context
 
     def create_context(self, name: str, parent: 'Context'=None):
+        """Create a new context with an optional parent context."""
         context = Context(name, parent)
         self.contexts[name] = context
         return context
 
     def enter_context(self, name: str):
+        """Enter a context by name."""
         self.current_context = self.contexts.get(name)
         if not self.current_context:
             raise KeyError(f"Context {name} does not exist.")
         return self.current_context
 
     def exit_context(self):
+        """Exit the current context and return to the parent context."""
         if self.current_context and self.current_context.parent:
             self.current_context = self.current_context.parent
         else:
             self.current_context = self.global_context
 
     def lookup(self, name: str):
+        """Look up a symbol by name in the current context and its parents."""
         context = self.current_context
         while context:
             symbol = context.lookup(name)
@@ -56,24 +63,28 @@ class ContextManager:
 
 
     def define(self, symbol: Symbol):
+        """Define a new symbol in the current context."""
         if self.current_context:
             self.current_context.define(symbol)
         else:
             raise RuntimeError("No active context to define symbol.")
 
     def assign(self, name: str, value: any, type: Type):
-        if self.current_context:
-            self.current_context.assign(name, value, type)
-        else:
-            raise RuntimeError("No active context to assign value.")
+        """Assign a value to an already defined symbol in a context."""
+        context = self.exists(name)
+        context.assign(name, value, type)
         
     def exists(self, name: str):
-        context = self.current_context
-        while context:
-            if context.lookup(name):
-                return True
-            context = context.parent
-        return False
+        """Check if a symbol exists in the current context or its parents."""
+        if self.current_context:
+            context = self.current_context
+            while context:
+                if context.lookup(name):
+                    return context
+                context = context.parent
+            return None
+        else:
+            raise RuntimeError("No active context to check symbol existence.")
 
     def capture_context(self, name: str):
         """Capture the current context for closure purposes."""
