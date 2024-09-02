@@ -63,3 +63,98 @@ class SymbolGenerator(CompiScriptLanguageVisitor):
     # Visit a parse tree produced by CompiScriptLanguageParser#funDecl.
     def visitFunDecl(self, ctx:CompiScriptLanguageParser.FunDeclContext):
         return self.visitChildren(ctx)
+    
+    # Visit a parse tree produced by CompiScriptLanguageParser#varDecl.
+    def visitVarDecl(self, ctx:CompiScriptLanguageParser.VarDeclContext):
+        """
+        Handle the declaration of a variable.
+        """
+        var_name = ctx.IDENTIFIER().getText()
+        
+        # Create a new variable symbol
+        symbol = Variable(name=var_name)
+
+        # Define the symbol in the current context
+        self.context_manager.define(symbol)
+
+        # If the variable has an initializer, evaluate the expression and assign it
+        if ctx.expression():
+            value, type = self.visit(ctx.expression())
+            self.context_manager.assign(var_name, value, type)
+
+        return None
+
+
+    # Visit a parse tree produced by CompiScriptLanguageParser#expressionStatement.
+    def visitExpressionStatement(self, ctx:CompiScriptLanguageParser.ExpressionStatementContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by CompiScriptLanguageParser#forStatement.
+    def visitForStatement(self, ctx:CompiScriptLanguageParser.ForStatementContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by CompiScriptLanguageParser#ifStatement.
+    def visitIfStatement(self, ctx:CompiScriptLanguageParser.IfStatementContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by CompiScriptLanguageParser#printStatement.
+    def visitPrintStatement(self, ctx:CompiScriptLanguageParser.PrintStatementContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by CompiScriptLanguageParser#returnStatement.
+    def visitReturnStatement(self, ctx:CompiScriptLanguageParser.ReturnStatementContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by CompiScriptLanguageParser#whileStatement.
+    def visitWhileStatement(self, ctx:CompiScriptLanguageParser.WhileStatementContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by CompiScriptLanguageParser#blockStatement.
+    def visitBlockStatement(self, ctx:CompiScriptLanguageParser.BlockStatementContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by CompiScriptLanguageParser#exprStmt.
+    def visitExprStmt(self, ctx:CompiScriptLanguageParser.ExprStmtContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by CompiScriptLanguageParser#forStmt.
+    def visitForStmt(self, ctx:CompiScriptLanguageParser.ForStmtContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by CompiScriptLanguageParser#ifStmt.
+    def visitIfStmt(self, ctx:CompiScriptLanguageParser.IfStmtContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by CompiScriptLanguageParser#printStmt.
+    def visitPrintStmt(self, ctx:CompiScriptLanguageParser.PrintStmtContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by CompiScriptLanguageParser#returnStmt.
+    def visitReturnStmt(self, ctx:CompiScriptLanguageParser.ReturnStmtContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by CompiScriptLanguageParser#whileStmt.
+    def visitWhileStmt(self, ctx:CompiScriptLanguageParser.WhileStmtContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by CompiScriptLanguageParser#block.
+    def visitBlock(self, ctx:CompiScriptLanguageParser.BlockContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by CompiScriptLanguageParser#expression.
+    def visitExpression(self, ctx:CompiScriptLanguageParser.ExpressionContext):
+        return self.visitChildren(ctx)
