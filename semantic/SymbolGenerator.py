@@ -17,3 +17,16 @@ class SymbolGenerator(CompiScriptLanguageVisitor):
         self.types_table.add_type(DoubleType())
         self.types_table.add_type(BoolType())
         self.types_table.add_type(StringType())
+
+    # Visit a parse tree produced by CompiScriptLanguageParser#program.
+    def visitProgram(self, ctx:CompiScriptLanguageParser.ProgramContext):
+        """
+        Create the global context and visit the children nodes.
+        """
+        self.context_manager.enter_context("global")  # Start in global context
+        result = self.visitChildren(ctx)
+        self.context_manager.exit_context()  # Exit global context
+
+        self.context_manager.current_context.symbol_table.print_table()
+
+        return result
