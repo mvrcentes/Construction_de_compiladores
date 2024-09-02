@@ -1,11 +1,12 @@
-import sys
-import os
+
 from antlr4 import *
 
 from lexer_parser.CompiScriptLanguageVisitor import CompiScriptLanguageVisitor
 from lexer_parser.CompiScriptLanguageParser import CompiScriptLanguageParser
+
 from structures.Types.TypesClasses import *
 from structures.Types.TypesTable import TypesTable
+
 from structures.Symbols.SymbolsClasses import *
 from structures.ContextManagement import *
 
@@ -28,13 +29,16 @@ class SymbolGenerator(CompiScriptLanguageVisitor):
         Create the global context and visit the children nodes.
         """
         self.context_manager.enter_context("global")  # Start in global context
-        result = self.visitChildren(ctx)
+        self.visitChildren(ctx)
         self.context_manager.exit_context()  # Exit global context
 
-        self.context_manager.current_context.symbol_table.print_table()
+        # Print the symbol table for each context
+        for context in self.context_manager.contexts.values():
+            context.print_symbol_table()
 
-        return result
-    
+        return None
+
+
     # Visit a parse tree produced by CompiScriptLanguageParser#classDeclaration.
     def visitClassDeclaration(self, ctx:CompiScriptLanguageParser.ClassDeclarationContext):
         return self.visitChildren(ctx)
@@ -63,7 +67,8 @@ class SymbolGenerator(CompiScriptLanguageVisitor):
     # Visit a parse tree produced by CompiScriptLanguageParser#funDecl.
     def visitFunDecl(self, ctx:CompiScriptLanguageParser.FunDeclContext):
         return self.visitChildren(ctx)
-    
+
+
     # Visit a parse tree produced by CompiScriptLanguageParser#varDecl.
     def visitVarDecl(self, ctx:CompiScriptLanguageParser.VarDeclContext):
         """
@@ -127,12 +132,56 @@ class SymbolGenerator(CompiScriptLanguageVisitor):
 
     # Visit a parse tree produced by CompiScriptLanguageParser#forStmt.
     def visitForStmt(self, ctx:CompiScriptLanguageParser.ForStmtContext):
-        return self.visitChildren(ctx)
+        """
+        Visit the 'for' statement.
+        Handle initialization, condition checking, and iteration updates.
+        Ensure that the condition is a boolean expression.
+        Visit the loop body.
+        """
+        # Handle the initializer (if any)
+        if ctx.varDecl():
+            self.visit(ctx.varDecl())
+        elif ctx.exprStmt():
+            self.visit(ctx.exprStmt())
+
+        # Evaluate the condition
+        if ctx.expression():
+            condition_value, condition_type = self.visit(ctx.expression())
+            if condition_type != BoolType():
+                raise TypeError(f"For loop condition must be of boolean type, got {condition_type.__str__()} instead.")
+
+        # Visit the loop body
+        self.visit(ctx.statement())
+
+        # Handle the iteration step (if any)
+        if ctx.exprStmt():
+            self.visit(ctx.exprStmt(1))
+
+        return None
 
 
     # Visit a parse tree produced by CompiScriptLanguageParser#ifStmt.
     def visitIfStmt(self, ctx:CompiScriptLanguageParser.IfStmtContext):
-        return self.visitChildren(ctx)
+        """
+        Visit the 'if' statement.
+        Ensure that the condition is a boolean expression.
+        Visit the 'then' branch and the optional 'else' branch.
+        """
+        # Visit and evaluate the if condition
+        condition_value, condition_type = self.visit(ctx.expression())
+
+        # Ensure the condition is of boolean type
+        if condition_type != BoolType():
+            raise TypeError(f"If condition must be of boolean type, got {condition_type.__str__()} instead.")
+
+        # Visit the 'then' branch
+        self.visit(ctx.statement(0))
+
+        # Visit the 'else' branch if it exists
+        if ctx.statement(1):
+            self.visit(ctx.statement(1))
+
+        return None
 
 
     # Visit a parse tree produced by CompiScriptLanguageParser#printStmt.
@@ -142,12 +191,45 @@ class SymbolGenerator(CompiScriptLanguageVisitor):
 
     # Visit a parse tree produced by CompiScriptLanguageParser#returnStmt.
     def visitReturnStmt(self, ctx:CompiScriptLanguageParser.ReturnStmtContext):
-        return self.visitChildren(ctx)
+        """
+        Handle return statements within functions.
+        Determine the return type dynamically based on the return expression.
+        """
+        value, return_type = self.visit(ctx.expression()) if ctx.expression() else (None, NilType())
 
+        # Update the current function's return type
+        current_function = self.context_manager.current_context.name
+        function_symbol = self.context_manager.lookup(current_function)
+
+        if function_symbol.__class__ == Function:
+            # If the function's return type is NilType (not determined), set it to the return type
+            if function_symbol.type == NilType():
+                function_symbol.set_return_type(return_type)
+            # If return type was already set, ensure it's consistent
+            elif function_symbol.type != return_type:
+                raise TypeError(f"Inconsistent return type in function {function_symbol.name}. Expected {function_symbol.type}, got {return_type}.")
+
+        return value, return_type
 
     # Visit a parse tree produced by CompiScriptLanguageParser#whileStmt.
     def visitWhileStmt(self, ctx:CompiScriptLanguageParser.WhileStmtContext):
-        return self.visitChildren(ctx)
+        """
+        Visit the 'while' statement.
+        Ensure that the condition is a boolean expression.
+        Visit the loop body to check for semantic correctness.
+        """
+        # Visit and evaluate the loop condition
+        condition_value, condition_type = self.visit(ctx.expression())
+
+        # Ensure the condition is of boolean type
+        if condition_type != BoolType():
+            raise TypeError(f"While loop condition must be of boolean type, got {condition_type.__str__()} instead.")
+
+        # Visit the loop body
+        self.visit(ctx.statement())
+
+        # In this semantic analysis phase, we don't execute the loop, so we don't loop or check if it will terminate.
+        return None
 
 
     # Visit a parse tree produced by CompiScriptLanguageParser#block.
@@ -158,6 +240,7 @@ class SymbolGenerator(CompiScriptLanguageVisitor):
     # Visit a parse tree produced by CompiScriptLanguageParser#expression.
     def visitExpression(self, ctx:CompiScriptLanguageParser.ExpressionContext):
         return self.visitChildren(ctx)
+
 
     # Visit a parse tree produced by CompiScriptLanguageParser#nestedAssigment.
     def visitNestedAssigment(self, ctx:CompiScriptLanguageParser.NestedAssigmentContext):
@@ -173,7 +256,7 @@ class SymbolGenerator(CompiScriptLanguageVisitor):
             # Handling simple variable assignment
             var_name = ctx.IDENTIFIER().getText()
             
-            # Ensure the variable exists or create it
+            # Ensure the variable exists in the current context
             if not self.context_manager.exists(var_name):
                 raise NameError(f"Variable {var_name} is not defined.")
 
@@ -182,7 +265,9 @@ class SymbolGenerator(CompiScriptLanguageVisitor):
             # Assign the value to the current variable
             self.context_manager.assign(var_name, value, type)
 
-        return value, type # Return the value for chained assignments
+            return value, type # Return the value for chained assignments
+
+        return None
 
 
     # Visit a parse tree produced by CompiScriptLanguageParser#logicOrAssigment.
@@ -284,27 +369,35 @@ class SymbolGenerator(CompiScriptLanguageVisitor):
     def visitTerm(self, ctx:CompiScriptLanguageParser.TermContext):
         """
         Visit the 'term' rule.
-        Ensure that both sides of the term are numeric.
-        Return the numeric type and a placeholder value.
+        Ensure that both sides of the term are numeric or strings.
+        Return the numeric or string type and a placeholder value.
         """
         left_value, left_type = self.visit(ctx.factor(0))
-        j = 1 # Placeholder for the operator index
+        
         for i in range(1, len(ctx.factor())):
             right_value, right_type = self.visit(ctx.factor(i))
 
-            if left_type not in (IntType(), DoubleType()) or right_type not in (IntType(), DoubleType()):
-                raise TypeError(f"Operands of '+' or '-' can only be numeric types, not {left_type.__str__()} and {right_type.__str__()}.")
+            if left_type not in (IntType(), DoubleType(), StringType()) or right_type not in (IntType(), DoubleType(), StringType()):
+                raise TypeError(f"Operands of '+' or '-' can only be numeric types or strings, not {left_type.__str__()} and {right_type.__str__()}.")
             
             # Retrieve the operator directly from the children nodes between terms
             operator = ctx.getChild(2 * i - 1).getText()
-            
-            # Widening the type if necessary
-            type = DoubleType() if left_type == DoubleType() or right_type == DoubleType() else IntType()
-                
-            left_value, left_type = f"({left_value} {operator} {right_value})", type
-            # update the operator index
-            j += 2
 
+            if (left_type == StringType() and right_type != StringType()) or (left_type != StringType() and right_type == StringType()) and operator == '+':
+                raise TypeError(f"Operands of '+' must be of the same type, not {left_type.__str__()} and {right_type.__str__()}.")
+
+            if left_type == StringType() and right_type == StringType() and operator == '-':
+                raise TypeError(f"Operands of '-' must be numeric types, not {left_type.__str__()} and {right_type.__str__()}.")
+            
+            
+            # Check if both operands are strings for concatenation
+            if operator == '+' and left_type == StringType() and right_type == StringType():
+                left_value, left_type = f"({left_value} {operator} {right_value})", StringType()
+            else:
+                # Widening the type if necessary
+                type = DoubleType() if left_type == DoubleType() or right_type == DoubleType() else IntType()
+                left_value, left_type = f"({left_value} {operator} {right_value})", type
+            
         return left_value, left_type
 
 
@@ -316,7 +409,7 @@ class SymbolGenerator(CompiScriptLanguageVisitor):
         Return the numeric type and a placeholder value.
         """
         left_value, left_type = self.visit(ctx.unary(0))
-        j = 1 # Placeholder for the operator index
+
         for i in range(1, len(ctx.unary())):
             right_value, right_type = self.visit(ctx.unary(i))
 
@@ -334,9 +427,6 @@ class SymbolGenerator(CompiScriptLanguageVisitor):
             type = DoubleType() if left_type == DoubleType() or right_type == DoubleType() else IntType()
                 
             left_value, left_type = f"({left_value} {operator} {right_value})", type
-            
-            # update the operator index
-            j += 2
 
         return left_value, left_type
 
@@ -377,8 +467,63 @@ class SymbolGenerator(CompiScriptLanguageVisitor):
 
 
     # Visit a parse tree produced by CompiScriptLanguageParser#call.
-    def visitCall(self, ctx:CompiScriptLanguageParser.CallContext):
-        return self.visitChildren(ctx)
+    def visitCall(self, ctx: CompiScriptLanguageParser.CallContext):
+        """
+        Handle function calls, method calls, and member accesses.
+        """
+        # Start by visiting the primary expression
+        primary_value, primary_type = self.visit(ctx.primary())
+
+        # Handle chained calls or member accesses
+        i = 1
+        while i < len(list(ctx.getChildren())):
+            # Check if this is a function call ( '(' arguments? ')' )
+            if ctx.getChild(i).getText() == '(':
+                func_name = primary_value
+                function_symbol = self.context_manager.lookup(func_name)
+
+                if function_symbol.__class__ != Function:
+                    raise NameError(f"{func_name} is not a function.")
+
+                # Enter the function call context
+                self.context_manager.enter_context(func_name)
+
+                # Evaluate the arguments
+                arguments = self.visit(ctx.getChild(i+1)) if ctx.getChild(i+1) else []
+                if len(arguments) != len(function_symbol.get_parameters()):
+                    raise TypeError(f"Function {func_name} expected {len(function_symbol.get_parameters())} arguments, got {len(arguments)}.")
+
+                # Simulate the function execution by assigning arguments to parameters
+                for arg, param in zip(arguments, function_symbol.get_parameters()):
+                    self.context_manager.assign(param.name, arg[0], arg[1])
+
+                # Visit the function body (block) in this new context
+                self.visit(function_symbol.get_block())
+
+                # Exit the function call context
+                self.context_manager.exit_context()
+
+                i = i + 3  # Skip the closing parenthesis ')'
+
+                # Update the primary_value and primary_type to reflect the function's return
+                primary_value, primary_type = None, function_symbol.type
+
+            # Check if this is a member access ( '.' IDENTIFIER )
+            elif ctx.getChild(i).getText() == '.':
+                member_name = ctx.getChild(i+1).getText()
+
+                # Look up the member in the type's symbol table or handle member access
+                if isinstance(primary_type, ClassSymbol):
+                    member_symbol = primary_type.lookup_method(member_name)  # Method lookup
+                    if member_symbol is None:
+                        raise NameError(f"Member {member_name} not found in class {primary_type.name}.")
+                    
+                    i = i + 2  # Skip the member name
+                    primary_value, primary_type = member_name, member_symbol.type
+                else:
+                    raise TypeError(f"Cannot access member {member_name} on non-class type {primary_type.__str__()}.")
+
+        return primary_value, primary_type
 
 
     # Visit a parse tree produced by CompiScriptLanguageParser#true.
@@ -433,14 +578,17 @@ class SymbolGenerator(CompiScriptLanguageVisitor):
         """
         Check if the symbol exists in the current context and return its value and type.
         """
-        if self.context_manager.exists(ctx.IDENTIFIER().getText()):
-            symbol = self.context_manager.lookup(ctx.IDENTIFIER().getText())
-        else:
+        if not self.context_manager.exists(ctx.IDENTIFIER().getText()):
             raise NameError(f"Symbol {ctx.IDENTIFIER().getText()} is not defined.")
+        
+        symbol = self.context_manager.lookup(ctx.IDENTIFIER().getText())
 
-        # Define the symbol in the current context
-        if isinstance(symbol, Variable):
+        # Check if the symbol is a variable
+        if isinstance(symbol, Variable) or isinstance(symbol, Parameter):
             return symbol.value, symbol.type
+        # Check if the symbol is a function
+        elif isinstance(symbol, Function):
+            return symbol.name, symbol.type
 
 
     # Visit a parse tree produced by CompiScriptLanguageParser#nestedExpression.
@@ -458,7 +606,32 @@ class SymbolGenerator(CompiScriptLanguageVisitor):
 
     # Visit a parse tree produced by CompiScriptLanguageParser#function.
     def visitFunction(self, ctx:CompiScriptLanguageParser.FunctionContext):
-        return self.visitChildren(ctx)
+        """
+        Handle function declaration.
+        """
+        func_name = ctx.IDENTIFIER().getText()
+        
+        # Create a new Function symbol with NilType as a placeholder
+        function_symbol = Function(name=func_name)
+
+        # Enter a new context for the function
+        function_context = self.context_manager.create_context(func_name, parent=self.context_manager.current_context)
+        
+        # Handle parameters
+        if ctx.parameters():
+            for i in range(len(ctx.parameters().IDENTIFIER())):
+                param_name = ctx.parameters().IDENTIFIER(i).getText()
+                parameter_symbol = Parameter(name=param_name)  # Initially, parameter type is NilType
+                function_symbol.add_parameter(parameter_symbol)
+                function_context.define(parameter_symbol)
+
+        # Set the block of the function
+        function_symbol.set_block(ctx.block())
+        
+        # Add the function to the symbol table in the current context
+        self.context_manager.define(function_symbol)
+
+        return None
 
 
     # Visit a parse tree produced by CompiScriptLanguageParser#parameters.
@@ -468,4 +641,11 @@ class SymbolGenerator(CompiScriptLanguageVisitor):
 
     # Visit a parse tree produced by CompiScriptLanguageParser#arguments.
     def visitArguments(self, ctx:CompiScriptLanguageParser.ArgumentsContext):
-        return self.visitChildren(ctx)
+        """
+        Handle function arguments.
+        """
+        arguments = []
+        for i in range(len(ctx.expression())):
+            arguments.append(self.visit(ctx.expression(i)))
+
+        return arguments
