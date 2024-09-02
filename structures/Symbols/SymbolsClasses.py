@@ -65,3 +65,29 @@ class Function(Symbol):
     def __repr__(self):
         params_str = ", ".join(str(param) for param in self.parameters)
         return f"Function (return_type={self.type}, parameters=[{params_str}])"
+
+class Field(Symbol):
+    def __init__(self, name: str, ctx:any, type: Type = NilType(), value: any = None):
+        super().__init__(name, ctx, type)
+        self.value = value
+
+    # Set type
+    def set_type(self, type: Type):
+        self.type = type
+
+    # Set value
+    def set_value(self, value: any):
+        self.value = value
+
+    def __repr__(self):
+        return f"Field (type={self.type}, value={self.value})"
+
+class Method(Function):
+    def __init__(self, name: str, ctx: any, return_type: Type = NilType(), parameters: list = None, is_static: bool = False):
+        super().__init__(name, ctx, return_type, parameters)
+        self.is_static = is_static
+
+    def __repr__(self):
+        params_str = ", ".join(str(param) for param in self.parameters)
+        return f"Method (return_type={self.type}, is_static={self.is_static}, parameters=[{params_str}])"
+    
