@@ -75,7 +75,10 @@ primary: 'true'                    # true
         | IDENTIFIER               # id 
         | '(' expression ')'       # nestedExpression
         | 'super' '.' IDENTIFIER   # super
+        | newExpression            # newInstance
         ;
+
+newExpression: 'new' IDENTIFIER '(' arguments? ')' ;
 
 function : IDENTIFIER '(' parameters? ')' block ;
 

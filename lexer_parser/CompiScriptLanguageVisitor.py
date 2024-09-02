@@ -224,6 +224,16 @@ class CompiScriptLanguageVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by CompiScriptLanguageParser#newInstance.
+    def visitNewInstance(self, ctx:CompiScriptLanguageParser.NewInstanceContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by CompiScriptLanguageParser#newExpression.
+    def visitNewExpression(self, ctx:CompiScriptLanguageParser.NewExpressionContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by CompiScriptLanguageParser#function.
     def visitFunction(self, ctx:CompiScriptLanguageParser.FunctionContext):
         return self.visitChildren(ctx)

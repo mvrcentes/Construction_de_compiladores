@@ -395,6 +395,24 @@ class CompiScriptLanguageListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by CompiScriptLanguageParser#newInstance.
+    def enterNewInstance(self, ctx:CompiScriptLanguageParser.NewInstanceContext):
+        pass
+
+    # Exit a parse tree produced by CompiScriptLanguageParser#newInstance.
+    def exitNewInstance(self, ctx:CompiScriptLanguageParser.NewInstanceContext):
+        pass
+
+
+    # Enter a parse tree produced by CompiScriptLanguageParser#newExpression.
+    def enterNewExpression(self, ctx:CompiScriptLanguageParser.NewExpressionContext):
+        pass
+
+    # Exit a parse tree produced by CompiScriptLanguageParser#newExpression.
+    def exitNewExpression(self, ctx:CompiScriptLanguageParser.NewExpressionContext):
+        pass
+
+
     # Enter a parse tree produced by CompiScriptLanguageParser#function.
     def enterFunction(self, ctx:CompiScriptLanguageParser.FunctionContext):
         pass

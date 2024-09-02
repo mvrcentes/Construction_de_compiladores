@@ -104,8 +104,8 @@ class Method(Function):
         return f"Method (return_type={self.type}, is_static={self.is_static}, parameters=[{params_str}])"
     
 class ClassSymbol(Symbol):
-    def __init__(self, name: str, ctx: any, classType: Type, superclass: 'ClassSymbol' = None, methods: list = None):
-        super().__init__(name, ctx, classType)
+    def __init__(self, name: str, classType: Type, superclass: 'ClassSymbol' = None, methods: list = None):
+        super().__init__(name, classType)
         self.superclass = superclass
         self.fields = []
         self.methods = methods if methods is not None else []
@@ -127,3 +127,4 @@ class ClassSymbol(Symbol):
         methods_str = ", ".join(str(method) for method in self.methods)
         superclass_str = f" extends {self.superclass.name}" if self.superclass else ""
         return f"ClassSymbol ({self.name}{superclass_str}, methods=[{methods_str}])"
+

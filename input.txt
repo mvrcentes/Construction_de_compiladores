@@ -1,1 +1,4 @@
-var hola = 10;
+fun esPar(num) {
+  return num % 2 == 0;
+}
+

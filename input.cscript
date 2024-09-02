@@ -1,5 +1,7 @@
-fun suma (a, b){
-	return a + b;
+fun suma(a, b) {
+  return a + b;
 }
 
-var x = suma(1, 2);
+var x = suma(3, 4);
+
+

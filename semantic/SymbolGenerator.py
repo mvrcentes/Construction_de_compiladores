@@ -60,8 +60,34 @@ class SymbolGenerator(CompiScriptLanguageVisitor):
 
 
     # Visit a parse tree produced by CompiScriptLanguageParser#classDecl.
-    def visitClassDecl(self, ctx:CompiScriptLanguageParser.ClassDeclContext):
-        return self.visitChildren(ctx)
+    def visitClassDecl(self, ctx: CompiScriptLanguageParser.ClassDeclContext):
+        class_name = ctx.IDENTIFIER(0).getText()
+        superclass = None
+
+        # Handle inheritance if specified
+        if ctx.IDENTIFIER(1):
+            superclass_name = ctx.IDENTIFIER(1).getText()
+            superclass = self.context_manager.lookup(superclass_name)
+            if superclass.__class__ != ClassSymbol:
+                raise TypeError(f"{superclass_name} is not a class.")
+
+        # Create a new class symbol
+        self.types_table.add_type(ClassType(class_name))
+        class_symbol = ClassSymbol(name=class_name, superclass=superclass)
+        self.context_manager.define(class_symbol)
+
+        # Enter a new context for this class
+        self.context_manager.enter_context(class_name)
+
+        # Visit all methods in the class
+        for func in ctx.function():
+            self.visit(func)
+
+        # Exit the class context
+        self.context_manager.exit_context()
+
+        return None
+        
 
 
     # Visit a parse tree produced by CompiScriptLanguageParser#funDecl.
@@ -529,7 +555,7 @@ class SymbolGenerator(CompiScriptLanguageVisitor):
                 self.context_manager.enter_context(func_name)
 
                 # Evaluate the arguments
-                arguments = self.visit(ctx.arguments()) if ctx.arguments() else []
+                arguments = self.visit(ctx.getChild(i+1)) if ctx.arguments() else []
                 i = i + 3 if ctx.arguments() else i + 2 # Skip the arguments and the closing parenthesis
 
                 if len(arguments) != len(function_symbol.get_parameters()):
@@ -689,3 +715,12 @@ class SymbolGenerator(CompiScriptLanguageVisitor):
             arguments.append(self.visit(ctx.expression(i)))
 
         return arguments
+    
+    # Visit a parse tree produced by CompiScriptLanguageParser#newInstance.
+    def visitNewInstance(self, ctx:CompiScriptLanguageParser.NewInstanceContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by CompiScriptLanguageParser#newExpression.
+    def visitNewExpression(self, ctx:CompiScriptLanguageParser.NewExpressionContext):
+        return self.visitChildren(ctx)
