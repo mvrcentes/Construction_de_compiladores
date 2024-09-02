@@ -5,6 +5,25 @@ class Symbol:
         self.name = name
         self.type = type
 
+    # Set name
+    def set_name(self, name: str):
+        self.name = name
+
+    # Get name
+    def get_name(self):
+        return self.name
+
+    # Set type
+    def set_type(self, type: Type):
+        self.type = type
+
+    # Get type
+    def get_type(self):
+        return self.type
+
+    def __str__(self):
+        return self.name
+
     def __repr__(self):
         return f"Symbol (type={self.type})"
 
@@ -23,10 +42,6 @@ class Variable(Symbol):
         super().__init__(name, type)
         self.value = value
 
-    # Set type
-    def set_type(self, type: Type):
-        self.type = type
-
     # Set new value
     def set_value(self, value: any):
         self.value = value
@@ -35,13 +50,9 @@ class Variable(Symbol):
         return f"Variable (type={self.type}, value={self.value})"
 
 class Parameter(Symbol):
-    def __init__(self, name: str, ctx:any, type: Type = NilType(), value: any = None):
-        super().__init__(name, ctx, type)
+    def __init__(self, name: str, type: Type = NilType(), value: any = None):
+        super().__init__(name, type)
         self.value = value
-
-    # Set type
-    def set_type(self, type: Type):
-        self.type = type
 
     # Set value
     def set_value(self, value: any):
@@ -51,29 +62,33 @@ class Parameter(Symbol):
         return f"Parameter (type={self.type}, value={self.value})"
 
 class Function(Symbol):
-    def __init__(self, name: str, ctx: any, return_type: Type = NilType(), parameters: list = None):
-        super().__init__(name, ctx, return_type)
+    def __init__(self, name: str, return_type: Type = NilType(), parameters: list = None):
+        super().__init__(name, return_type)
         self.parameters = parameters if parameters is not None else []
+    
+    def set_return_type(self, return_type: Type):
+        self.type = return_type
+
+    def set_block(self, block: any):
+        self.block = block
+
+    def get_block(self):
+        return self.block
 
     def add_parameter(self, parameter: Parameter):
         self.parameters.append(parameter)
 
-    # Set the return type of the function until it is known
-    def set_return_type(self, return_type: Type):
-        self.type = return_type
-    
+    def get_parameters(self):
+        return self.parameters
+
     def __repr__(self):
         params_str = ", ".join(str(param) for param in self.parameters)
         return f"Function (return_type={self.type}, parameters=[{params_str}])"
-
+    
 class Field(Symbol):
     def __init__(self, name: str, ctx:any, type: Type = NilType(), value: any = None):
         super().__init__(name, ctx, type)
         self.value = value
-
-    # Set type
-    def set_type(self, type: Type):
-        self.type = type
 
     # Set value
     def set_value(self, value: any):
