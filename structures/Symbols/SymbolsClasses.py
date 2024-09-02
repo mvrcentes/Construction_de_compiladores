@@ -91,3 +91,28 @@ class Method(Function):
         params_str = ", ".join(str(param) for param in self.parameters)
         return f"Method (return_type={self.type}, is_static={self.is_static}, parameters=[{params_str}])"
     
+class ClassSymbol(Symbol):
+    def __init__(self, name: str, ctx: any, classType: Type, superclass: 'ClassSymbol' = None, methods: list = None):
+        super().__init__(name, ctx, classType)
+        self.superclass = superclass
+        self.fields = []
+        self.methods = methods if methods is not None else []
+
+    def add_method(self, method: Method):
+        self.methods.append(method)
+
+    def lookup_method(self, method_name: str):
+        # First look in the current class's methods
+        for method in self.methods:
+            if method.name == method_name:
+                return method
+        # If not found, look in the superclass
+        if self.superclass:
+            return self.superclass.lookup_method(method_name)
+        return None
+    
+    def __repr__(self):
+        methods_str = ", ".join(str(method) for method in self.methods)
+        superclass_str = f" extends {self.superclass.name}" if self.superclass else ""
+        return f"ClassSymbol ({self.name}{superclass_str}, methods=[{methods_str}])"
+
