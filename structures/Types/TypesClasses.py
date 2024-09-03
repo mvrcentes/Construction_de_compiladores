@@ -8,6 +8,19 @@ class Type:
     def __repr__(self):
         return f"{self.__class__.__name__}({self.name})"
 
+class VoidType(Type):
+    _instance = None
+
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super(VoidType, cls).__new__(cls)
+            cls._instance.name = "void"
+        return cls._instance
+
+    def __init__(self):
+        super().__init__("void")
+
+
 class NilType(Type):
     _instance = None
 
