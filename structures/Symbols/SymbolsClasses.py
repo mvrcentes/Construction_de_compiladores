@@ -20,10 +20,7 @@ class Symbol:
     # Get type
     def get_type(self):
         return self.type
-
-    def __str__(self):
-        return self.name
-
+        
     def __repr__(self):
         return f"Symbol (type={self.type})"
 
@@ -62,7 +59,7 @@ class Parameter(Symbol):
         return f"Parameter (type={self.type}, value={self.value})"
 
 class Function(Symbol):
-    def __init__(self, name: str, return_type: Type = NilType(), parameters: list = None):
+    def __init__(self, name: str, return_type: Type = VoidType(), parameters: list = None):
         super().__init__(name, return_type)
         self.parameters = parameters if parameters is not None else []
     
@@ -98,7 +95,7 @@ class Field(Symbol):
         return f"Field (type={self.type}, value={self.value})"
 
 class Method(Function):
-    def __init__(self, name: str, ctx: any, return_type: Type = NilType(), parameters: list = None, is_static: bool = False):
+    def __init__(self, name: str, ctx: any, return_type: Type = VoidType(), parameters: list = None, is_static: bool = False):
         super().__init__(name, ctx, return_type, parameters)
         self.is_static = is_static
 
@@ -130,4 +127,3 @@ class ClassSymbol(Symbol):
         methods_str = ", ".join(str(method) for method in self.methods)
         superclass_str = f" extends {self.superclass.name}" if self.superclass else ""
         return f"ClassSymbol ({self.name}{superclass_str}, methods=[{methods_str}])"
-
