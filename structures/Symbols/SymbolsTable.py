@@ -32,11 +32,12 @@ class SymbolsTable:
     
     def print_table(self, contex_name: str):
         """Prints the symbol table in a legible format."""
+        
+        print(f"Symbol Table {contex_name}:")
         if not self.table:
             print("Symbol table is empty.")
             return
         
-        print(f"Symbol Table {contex_name}:")
         print(f"{'Name':<15} {'Info':<15}")
         print("-" * 45)
         for name, symbol in self.table.items():
