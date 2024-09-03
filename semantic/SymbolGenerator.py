@@ -122,7 +122,25 @@ class SymbolGenerator(CompiScriptLanguageVisitor):
 
     # Visit a parse tree produced by CompiScriptLanguageParser#blockStatement.
     def visitBlockStatement(self, ctx:CompiScriptLanguageParser.BlockStatementContext):
-        return self.visitChildren(ctx)
+        """
+        Visit a block statement.
+        Create a new context for the block, visit its children (statements),
+        and then exit the context.
+        """
+        # Create a unique name for the block context
+        block_name = f"block-{id(ctx)}"
+        
+        # Create a new context with the current context as its parent
+        self.context_manager.create_context(block_name, parent=self.context_manager.current_context)
+        self.context_manager.enter_context(block_name)
+        
+        # Visit all the statements inside the block
+        value, return_type = self.visit(ctx.block()) if self.visit(ctx.block()) else (None, VoidType())
+        
+        # Exit the block context, returning to the parent context
+        self.context_manager.exit_context()
+        
+        return value, return_type
 
 
     # Visit a parse tree produced by CompiScriptLanguageParser#exprStmt.
@@ -146,7 +164,7 @@ class SymbolGenerator(CompiScriptLanguageVisitor):
 
         # Evaluate the condition
         if ctx.expression():
-            condition_value, condition_type = self.visit(ctx.expression())
+            _, condition_type = self.visit(ctx.expression())
             if condition_type != BoolType():
                 raise TypeError(f"For loop condition must be of boolean type, got {condition_type.__str__()} instead.")
 
@@ -168,7 +186,7 @@ class SymbolGenerator(CompiScriptLanguageVisitor):
         Visit the 'then' branch and the optional 'else' branch.
         """
         # Visit and evaluate the if condition
-        condition_value, condition_type = self.visit(ctx.expression())
+        _, condition_type = self.visit(ctx.expression())
 
         # Ensure the condition is of boolean type
         if condition_type != BoolType():
@@ -186,7 +204,23 @@ class SymbolGenerator(CompiScriptLanguageVisitor):
 
     # Visit a parse tree produced by CompiScriptLanguageParser#printStmt.
     def visitPrintStmt(self, ctx:CompiScriptLanguageParser.PrintStmtContext):
-        return self.visitChildren(ctx)
+        """
+        Visit the 'print' statement.
+        Evaluate the expression to be printed, ensuring it's valid.
+        Generate the output or log the value.
+        """
+        # Evaluate the expression that is to be printed
+        value, value_type = self.visit(ctx.expression())
+
+        # For simplicity, let's assume we just log the value to the console.
+        # In a real compiler, this might be stored in an output buffer or passed to the runtime environment.
+        print(f"Print: {value} (Type: {value_type})")
+
+        # If you're collecting output for testing or other purposes, you could store the result
+        # For example:
+        # self.output.append(value)
+        
+        return None
 
 
     # Visit a parse tree produced by CompiScriptLanguageParser#returnStmt.
@@ -195,19 +229,18 @@ class SymbolGenerator(CompiScriptLanguageVisitor):
         Handle return statements within functions.
         Determine the return type dynamically based on the return expression.
         """
-        value, return_type = self.visit(ctx.expression()) if ctx.expression() else (None, NilType())
+        
+        value, return_type = self.visit(ctx.expression()) if ctx.expression() else (None, VoidType())
 
         # Update the current function's return type
         current_function = self.context_manager.current_context.name
         function_symbol = self.context_manager.lookup(current_function)
 
         if function_symbol.__class__ == Function:
-            # If the function's return type is NilType (not determined), set it to the return type
-            if function_symbol.type == NilType():
-                function_symbol.set_return_type(return_type)
-            # If return type was already set, ensure it's consistent
-            elif function_symbol.type != return_type:
-                raise TypeError(f"Inconsistent return type in function {function_symbol.name}. Expected {function_symbol.type}, got {return_type}.")
+            # Update the return type of the function
+            function_symbol.set_return_type(return_type)
+        else:
+            raise NameError(f"Return statement found outside a function context.")
 
         return value, return_type
 
@@ -219,7 +252,7 @@ class SymbolGenerator(CompiScriptLanguageVisitor):
         Visit the loop body to check for semantic correctness.
         """
         # Visit and evaluate the loop condition
-        condition_value, condition_type = self.visit(ctx.expression())
+        _, condition_type = self.visit(ctx.expression())
 
         # Ensure the condition is of boolean type
         if condition_type != BoolType():
@@ -234,7 +267,15 @@ class SymbolGenerator(CompiScriptLanguageVisitor):
 
     # Visit a parse tree produced by CompiScriptLanguageParser#block.
     def visitBlock(self, ctx:CompiScriptLanguageParser.BlockContext):
-        return self.visitChildren(ctx)
+        """
+        Visit a block of statements.
+        Visit each declaration in the block and collect the return values.
+        """
+        # Visit each declaration and collect the return values
+        return_values = [self.visit(declaration) for declaration in ctx.declaration()]
+
+        # If there are return values, return the first one; otherwise, return None
+        return return_values[0] if return_values else None
 
 
     # Visit a parse tree produced by CompiScriptLanguageParser#expression.
@@ -498,7 +539,9 @@ class SymbolGenerator(CompiScriptLanguageVisitor):
                     self.context_manager.assign(param.name, arg[0], arg[1])
 
                 # Visit the function body (block) in this new context
-                self.visit(function_symbol.get_block())
+                value, return_type = self.visit(function_symbol.get_block())
+
+                print(f"Function {func_name} returned {value} (Type: {return_type})")
 
                 # Exit the function call context
                 self.context_manager.exit_context()
@@ -506,7 +549,7 @@ class SymbolGenerator(CompiScriptLanguageVisitor):
                 i = i + 3  # Skip the closing parenthesis ')'
 
                 # Update the primary_value and primary_type to reflect the function's return
-                primary_value, primary_type = None, function_symbol.type
+                primary_value, primary_type = value, return_type
 
             # Check if this is a member access ( '.' IDENTIFIER )
             elif ctx.getChild(i).getText() == '.':
