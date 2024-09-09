@@ -20,6 +20,17 @@ class VoidType(Type):
     def __init__(self):
         super().__init__("void")
 
+class AnyType(Type):
+    _instance = None
+
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super(AnyType, cls).__new__(cls)
+            cls._instance.name = "any"
+        return cls._instance
+
+    def __init__(self):
+        super().__init__("any")
 
 class NilType(Type):
     _instance = None
