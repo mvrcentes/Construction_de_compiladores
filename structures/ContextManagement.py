@@ -7,6 +7,7 @@ class Context:
         self.name = name
         self.symbol_table = SymbolsTable()
         self.parent = parent
+        self.class_symbol = None
 
     def define(self, symbol: Symbol):
         self.symbol_table.define(symbol)
@@ -17,11 +18,20 @@ class Context:
     def assign(self, name: str, value: any, type: Type):
         self.symbol_table.assign(name, value, type)
 
+    def replace(self, name: str, symbol: Symbol):
+        self.symbol_table.replace(name, symbol)
+
     def exists(self, name: str):
         return self.symbol_table.exists(name)
     
     def print_symbol_table(self):
         self.symbol_table.print_table(self.name)
+
+    def set_context_class(self, class_symbol):
+        self.class_symbol = class_symbol
+
+    def get_context_class(self):
+        return self.class_symbol
 
     def __repr__(self):
         return f"Context(name={self.name}, symbols={self.symbol_table})"
@@ -29,7 +39,7 @@ class Context:
 class ContextManager:
     def __init__(self):
         self.contexts = {}
-        self.global_context = self.create_context("global")
+        self.global_context = self.create_context("Main.global")
         self.current_context = self.global_context
 
     def create_context(self, name: str, parent: 'Context'=None):
@@ -58,7 +68,7 @@ class ContextManager:
         while context:
             symbol = context.lookup(name)
             if symbol:
-                return symbol
+                return symbol, context.name
             context = context.parent
 
 
@@ -73,6 +83,13 @@ class ContextManager:
         """Assign a value to an already defined symbol in a context."""
         context = self.exists(name)
         context.assign(name, value, type)
+
+    def replace(self, name: str, symbol: Symbol, context_name: str):
+        """Replace a symbol in the current context."""
+        if self.contexts[context_name]:
+            self.contexts[context_name].replace(name, symbol)
+        else:
+            raise KeyError(f"Context {context_name} does not exist.")
         
     def exists(self, name: str):
         """Check if a symbol exists in the current context or its parents."""
@@ -88,12 +105,24 @@ class ContextManager:
 
     def capture_context(self, name: str):
         """Capture the current context for closure purposes."""
+        if name in self.contexts:
+            context = self.contexts[name]
+            context.parent = self.current_context
+        else:
+            raise KeyError(f"Context {name} does not exist.")
+        
+    def check_recursive_context(self, name: str):
+        """Check if a context is recursive."""
         context = self.current_context
-        while context and context.name != name:
+        while context:
+            if context.name == name:
+                return True
             context = context.parent
-        if context:
-            return context
-        raise KeyError(f"Context {name} not found for closure capture.")
+        return False
+    
+    def get_context_name(self):
+        """Get the name of the current context."""
+        return self.current_context.name
 
     def __repr__(self):
         return f"ContextManager(current_context={self.current_context}, contexts={self.contexts})"
