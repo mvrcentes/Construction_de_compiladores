@@ -43,7 +43,7 @@ def main(argv):
     tree = parser.program()  # We are using 'program' since this is the starting rule based on our CompiScriptLanguage grammar
 
     # Generate a DOT representation of the parse tree
-    if len(argv) > 2 and argv[2] == '--dot':
+    if len(argv) > 2 and argv[2] == '--pdf':
         dot_tree = generate_dot_tree(tree, parser.ruleNames)
         # dot_tree.render('parse_tree', format='pdf', cleanup=True)
         dot_tree.view('parse_tree', cleanup=True)

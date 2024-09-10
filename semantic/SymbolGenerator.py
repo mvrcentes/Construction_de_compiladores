@@ -81,6 +81,8 @@ class SymbolGenerator(CompiScriptLanguageVisitor):
         """
         Handle the declaration of a class.
         """
+        main_context = self.context_manager.get_context_name()
+        
         class_name = ctx.IDENTIFIER(0).getText()
         superclass = None
 
@@ -98,13 +100,15 @@ class SymbolGenerator(CompiScriptLanguageVisitor):
         # Define the class symbol in the current context
         self.context_manager.define(class_symbol)
 
+        # If the class has a superclass, enter its context
+        if superclass:
+            self.context_manager.enter_context(f"Class.{superclass_name}")
+
         # Create a new context for the class
         self.context_manager.create_context(f"Class.{class_name}", parent=self.context_manager.current_context)
 
         # Enter a new context for this class
         self.context_manager.enter_context(f"Class.{class_name}")
-
-        #self.context_manager.set_context_class_symbol(class_symbol)
 
         # Visit all methods in the class
         for func in ctx.function():
@@ -112,6 +116,10 @@ class SymbolGenerator(CompiScriptLanguageVisitor):
 
         # Exit the class context
         self.context_manager.exit_context()
+
+        # Return to main context (global or block)
+        if superclass:
+            self.context_manager.enter_context(main_context)
 
         return None, VoidType()  # Return a placeholder value and type
         
@@ -327,8 +335,8 @@ class SymbolGenerator(CompiScriptLanguageVisitor):
         value, return_type = self.visit(ctx.expression()) if ctx.expression() else (None, VoidType())
 
         # Update the current function's return type
-        current_function = self.context_manager.current_context.name
-        function_symbol, _ = self.context_manager.lookup(current_function)
+        current_function = self.context_manager.get_context_name()
+        function_symbol, _ = self.context_manager.lookup(current_function.split('.')[-1])
 
         if function_symbol.__class__ == Function:
             # Update the return values of the function
@@ -370,8 +378,8 @@ class SymbolGenerator(CompiScriptLanguageVisitor):
             self.visit(declaration)
 
         # Update the current function's return type
-        current_function = self.context_manager.current_context.name
-        function_symbol, _ = self.context_manager.lookup(current_function)
+        current_function = self.context_manager.get_context_name()
+        function_symbol, _ = self.context_manager.lookup(current_function.split('.')[-1])
 
         if function_symbol.__class__ == Function:
             return_values = function_symbol.get_return_values()
@@ -415,16 +423,11 @@ class SymbolGenerator(CompiScriptLanguageVisitor):
         """
         if ctx.call():
             # If the `call` is present, visit the `call` to process it
-            print("Assignment contains a call.")
-            
             value, type = self.visit(ctx.call())
 
             if value == "this":
                 member_name = ctx.IDENTIFIER().getText()
                 value, type = self.visit(ctx.assignment())
-                # class_name = self.context_manager.get_context_name().split('.')[0]
-
-                self.context_manager.define(Field(member_name, type, value))
 
         else:
             # Handling simple variable assignment
@@ -684,7 +687,7 @@ class SymbolGenerator(CompiScriptLanguageVisitor):
                     raise TypeError(f"Function {func_name} expected {len(function_symbol.get_parameters())} arguments, got {len(arguments)}.")
 
                 # Check for recursive calls
-                if self.context_manager.check_recursive_context(func_name):
+                if self.context_manager.check_recursive_context(f"Function.{func_name}"):
                     # Check if the arguments match the function's parameters
                     for arg, param in zip(arguments, function_symbol.get_parameters()):
                         if arg[1] != param.type:
@@ -693,10 +696,10 @@ class SymbolGenerator(CompiScriptLanguageVisitor):
                     return "any", AnyType() # Return a placeholder value and type
 
                 # Capture the current context for closure purposes
-                self.context_manager.capture_context(func_name)
+                self.context_manager.capture_context(f"Function.{func_name}")
 
                 # Enter a new context for the function call
-                self.context_manager.enter_context(func_name)
+                self.context_manager.enter_context(f"Function.{func_name}")
                 
                 # Simulate the function execution by assigning arguments to parameters
                 for arg, param in zip(arguments, function_symbol.get_parameters()):
@@ -713,18 +716,10 @@ class SymbolGenerator(CompiScriptLanguageVisitor):
 
             # Check if this is a member access ( '.' IDENTIFIER )
             elif ctx.getChild(i).getText() == '.':
-                member_name = ctx.getChild(i+1).getText()
-
-                # Look up the member in the type's symbol table or handle member access
-                if isinstance(primary_type, ClassSymbol):
-                    member_symbol = primary_type.lookup_method(member_name)  # Method lookup
-                    if member_symbol is None:
-                        raise NameError(f"Member {member_name} not found in class {primary_type.name}.")
-                    
-                    i = i + 2  # Skip the member name
-                    primary_value, primary_type = member_name, member_symbol.type
-                else:
-                    raise TypeError(f"Cannot access member {member_name} on non-class type {primary_type.__str__()}.")
+                # Check if the primary value is a class
+                if primary_value == "this":
+                    member_name = ctx.IDENTIFIER().getText()
+                    print(f"Member access: {member_name}")
 
         return primary_value, primary_type
 
@@ -817,16 +812,18 @@ class SymbolGenerator(CompiScriptLanguageVisitor):
         """
         func_name = ctx.IDENTIFIER().getText()
 
+        # Check if the function is a method and set the function name accordingly
         prefix, name = self.context_manager.get_context_name().split('.')
         if prefix == "Class":
-            func_name = f"{prefix}.{name}.{func_name}"
+            func_name = f"{name}.{func_name}"
         
         # Create a new function symbol
         # If the function is a method, create a Method symbol; otherwise, create a Function symbol
         function_symbol = Method(name=func_name) if prefix == "Class" else Function(name=func_name)
 
         # Enter a new context for the function
-        function_context = self.context_manager.create_context(f"Function.{func_name}")
+        context_name = f"Method.{func_name}" if prefix == "Class" else f"Function.{func_name}"
+        function_context = self.context_manager.create_context(context_name)
         
         # Handle parameters
         if ctx.parameters():
@@ -843,12 +840,11 @@ class SymbolGenerator(CompiScriptLanguageVisitor):
         self.context_manager.define(function_symbol)
         
         # Verify if the function is a method and add it to the class symbol
-        class_symbol, contex_name = self.context_manager.lookup(name) if prefix == "Class" else None
+        class_symbol, _ = self.context_manager.lookup(name) if prefix == "Class" else (None, None)
         
         # Add the method to the class symbol
         if class_symbol is not None:
             class_symbol.add_method(function_symbol)
-            self.context_manager.replace(name, class_symbol, contex_name)
 
         return None, VoidType()
 
@@ -884,29 +880,32 @@ class SymbolGenerator(CompiScriptLanguageVisitor):
         """
         Handle the creation of a new instance of a class.
         """
+        main_context = self.context_manager.get_context_name()
+
         class_name = ctx.IDENTIFIER().getText()
         class_symbol, _ = self.context_manager.lookup(class_name)
 
         if class_symbol.__class__ != ClassSymbol:
             raise NameError(f"{class_name} is not a class.")
-
-        class_type = self.types_table.get_type(class_name)
-        instance = Instance(class_symbol, class_type)
         
         # Handle constructor (init) if exists
-        constructor = class_symbol.lookup_method("init")
+        constructor = class_symbol.lookup_method(f"{class_name}.init")
+        
         if constructor:
+            class_type = self.types_table.get_type(class_name)
+            instance = Instance(class_symbol, class_type)
+
+            # Define the instance in the current context
+            self.context_manager.define(instance)
+
+            # Enter the class context
+            self.context_manager.enter_context(f"Class.{class_name}")
+
             # Create a new context for instance creation
-            self.context_manager.create_context(f"{class_name}.{id(ctx)}", parent=self.context_manager.current_context)
+            self.context_manager.create_context(f"Instance.{class_name}.{id(ctx)}", parent=self.context_manager.current_context)
 
             # Enter a new context for the instance creation
-            self.context_manager.enter_context(f"{class_name}.{id(ctx)}")
-            
-            # Capture the current context for closure purposes
-            self.context_manager.capture_context(class_name+".init")
-
-            # Enter a new context for the constructor call
-            self.context_manager.enter_context(class_name+".init")
+            self.context_manager.enter_context(f"Instance.{class_name}.{id(ctx)}")
 
             # Evaluate the arguments
             arguments = self.visit(ctx.arguments()) if ctx.arguments() else []
@@ -921,11 +920,11 @@ class SymbolGenerator(CompiScriptLanguageVisitor):
             # Visit the function body (block) in this new context
             _, return_type = self.visit(constructor.get_block())
 
-            # Exit the function call context
-            self.context_manager.exit_context()
+            # Exit the constructor call context and the related contexts
+            self.context_manager.enter_context(main_context)
 
-            # Exit the instance creation context
-            self.context_manager.exit_context()
+        else:
+            raise NameError(f"Class {class_name} does not have a constructor.")
 
         return instance, class_type
     

@@ -119,8 +119,18 @@ class CompiScriptLanguageVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
-    # Visit a parse tree produced by CompiScriptLanguageParser#expression.
-    def visitExpression(self, ctx:CompiScriptLanguageParser.ExpressionContext):
+    # Visit a parse tree produced by CompiScriptLanguageParser#assignmentExp.
+    def visitAssignmentExp(self, ctx:CompiScriptLanguageParser.AssignmentExpContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by CompiScriptLanguageParser#funAnonExp.
+    def visitFunAnonExp(self, ctx:CompiScriptLanguageParser.FunAnonExpContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by CompiScriptLanguageParser#funAnon.
+    def visitFunAnon(self, ctx:CompiScriptLanguageParser.FunAnonContext):
         return self.visitChildren(ctx)
 
 
@@ -174,8 +184,13 @@ class CompiScriptLanguageVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
-    # Visit a parse tree produced by CompiScriptLanguageParser#call.
-    def visitCall(self, ctx:CompiScriptLanguageParser.CallContext):
+    # Visit a parse tree produced by CompiScriptLanguageParser#primaryCall.
+    def visitPrimaryCall(self, ctx:CompiScriptLanguageParser.PrimaryCallContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by CompiScriptLanguageParser#funAnonCall.
+    def visitFunAnonCall(self, ctx:CompiScriptLanguageParser.FunAnonCallContext):
         return self.visitChildren(ctx)
 
 

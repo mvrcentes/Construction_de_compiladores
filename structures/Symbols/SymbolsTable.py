@@ -30,17 +30,9 @@ class SymbolsTable:
         symbol.set_value(value)
         symbol.set_type(type)
 
-    def replace(self, name: str, symbol: Symbol):
-        """Replace a symbol in the table."""
-        if name not in self.table:
-            raise KeyError(f"Symbol {name} is not defined.")
-        self.table[name] = symbol
-
     def exists(self, name: str) -> bool:
         """Check if a symbol exists in the table."""
         return name in self.table
-    
-    import textwrap
 
     def print_table(self, context_name: str):
         """Prints the symbol table in a formatted table-like style with cells and wraps large values."""
@@ -53,9 +45,8 @@ class SymbolsTable:
             return
         
         # Define column widths
-        name_width = 20
+        name_width = 30
         info_width = 50
-        total_width = name_width + info_width + 5
 
         # Print table headers with borders
         print("+" + "-" * (name_width + 2) + "+" + "-" * (info_width + 2) + "+")
@@ -66,22 +57,22 @@ class SymbolsTable:
         for name, symbol in self.table.items():
             symbol_info = str(symbol)
 
-            # Wrap the symbol info to fit within the defined width
+            # Wrap both name and symbol info to fit within the defined widths
+            wrapped_name = textwrap.wrap(name, name_width)
             wrapped_info = textwrap.wrap(symbol_info, info_width)
 
-            # Print the first line (name + first part of info)
-            print(f"| {name:<{name_width}} | {wrapped_info[0]:<{info_width}} |")
+            # Ensure both are of equal length by padding the shorter one
+            max_lines = max(len(wrapped_name), len(wrapped_info))
+            wrapped_name += [''] * (max_lines - len(wrapped_name))
+            wrapped_info += [''] * (max_lines - len(wrapped_info))
 
-            # Print the rest of the wrapped lines (only info column)
-            for line in wrapped_info[1:]:
-                print(f"| {'':<{name_width}} | {line:<{info_width}} |")
+            # Print each line
+            for n, i in zip(wrapped_name, wrapped_info):
+                print(f"| {n:<{name_width}} | {i:<{info_width}} |")
 
-            print(f"| {"":<{name_width}} | {"":<{info_width}} |")
-            
-        # Print bottom border
-        print("+" + "-" * (name_width + 2) + "+" + "-" * (info_width + 2) + "+")
+            print(f"+" + "-" * (name_width + 2) + "+" + "-" * (info_width + 2) + "+")
+
         print("\n")
-
 
         def __repr__(self):
             return str(self.table)

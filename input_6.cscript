@@ -1,0 +1,116 @@
+var globalVar1 = 10;
+var globalVar2 = "Global String";
+var globalBoolean = true;
+
+fun countToTen() {
+    var i = 0;
+    for (i = 0; i < 10; i = i + 1) {
+        print i;
+    }
+}
+
+
+fun findEvenNumber() {
+    var i = 0;
+    for (i = 0; i < 10; i = i + 1) {
+        if (i % 2 == 0) {
+            print i + " is even.";
+        }
+        if (i == 7) {
+            print i;
+        }
+    }
+}
+
+fun countdown() {
+    var i = 10;
+    while (i > 0) {
+        print i;
+        i = i - 1;
+    }
+}
+
+fun findFirstOdd() {
+    var i = 10;
+    while (i > 0) {
+        i = i - 1;
+        if (i % 2 != 0) {
+            print i + " is odd.";
+        }
+    }
+}
+
+fun compareValues(a, b) {
+    if (a > b) {
+        print "a is greater than b";
+    } else if (a < b) {
+        print "a is less than b";
+    } else {
+        print "a is equal to b";
+    }
+
+    if (a == 10 and b == 20) {
+        print "Both conditions met.";
+    }
+
+    if (globalBoolean or a > b) {
+        print "At least one condition met.";
+    }
+
+    if (!(a == b)) {
+        print "a is not equal to b";
+    }
+}
+
+fun checkForNil() {
+    var someVar = nil;
+    if (someVar == nil) {
+        print "someVar is nil";
+    }
+}
+
+fun operationsDemo() {
+    var boolResult = true and false;
+    var numResult = 5 + 10;
+    var stringResult = "Hello" + " World";
+    var mixedResult = "Number: " + 10;
+
+    print boolResult;
+    print numResult;
+    print stringResult;
+    print mixedResult;
+}
+
+fun lateAssignment() {
+    var lateVar;
+    lateVar = 25;
+    print lateVar;
+}
+
+fun addNumbers(x, y) {
+    return x + y;
+}
+
+fun printMessage(message) {
+    print message;
+}
+
+fun outerFunction() {
+    fun innerFunction() {
+        print "This is inside the inner function.";
+    }
+    innerFunction();
+    print "This is inside the outer function.";
+}
+
+countToTen();
+findEvenNumber();
+countdown();
+findFirstOdd();
+compareValues(1,2);
+checkForNil();
+operationsDemo();
+lateAssignment();
+print addNumbers(5,10);
+printMessage("Hello from CompiScript!");
+outerFunction();

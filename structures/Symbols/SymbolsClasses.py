@@ -110,6 +110,10 @@ class Field(Symbol):
     def set_value(self, value: any):
         self.value = value
 
+    # Get value
+    def get_value(self):
+        return self.value
+
     def __repr__(self):
         return f"Field (type={self.type}, value={self.value})"
 
@@ -155,6 +159,11 @@ class Instance(Variable):
         super().__init__(name, type)
         self.class_symbol = class_symbol
         self.fields = {}
+
+    def add_field(self, field: Field):
+        if field.name in self.fields:
+            raise NameError(f"Field {field.name} already defined in instance of class {self.class_symbol.name}.")
+        self.fields[field.name] = field
 
     def __repr__(self):
         return f"Instance(class=[{self.class_symbol.name}])"

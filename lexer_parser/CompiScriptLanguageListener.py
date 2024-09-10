@@ -206,12 +206,30 @@ class CompiScriptLanguageListener(ParseTreeListener):
         pass
 
 
-    # Enter a parse tree produced by CompiScriptLanguageParser#expression.
-    def enterExpression(self, ctx:CompiScriptLanguageParser.ExpressionContext):
+    # Enter a parse tree produced by CompiScriptLanguageParser#assignmentExp.
+    def enterAssignmentExp(self, ctx:CompiScriptLanguageParser.AssignmentExpContext):
         pass
 
-    # Exit a parse tree produced by CompiScriptLanguageParser#expression.
-    def exitExpression(self, ctx:CompiScriptLanguageParser.ExpressionContext):
+    # Exit a parse tree produced by CompiScriptLanguageParser#assignmentExp.
+    def exitAssignmentExp(self, ctx:CompiScriptLanguageParser.AssignmentExpContext):
+        pass
+
+
+    # Enter a parse tree produced by CompiScriptLanguageParser#funAnonExp.
+    def enterFunAnonExp(self, ctx:CompiScriptLanguageParser.FunAnonExpContext):
+        pass
+
+    # Exit a parse tree produced by CompiScriptLanguageParser#funAnonExp.
+    def exitFunAnonExp(self, ctx:CompiScriptLanguageParser.FunAnonExpContext):
+        pass
+
+
+    # Enter a parse tree produced by CompiScriptLanguageParser#funAnon.
+    def enterFunAnon(self, ctx:CompiScriptLanguageParser.FunAnonContext):
+        pass
+
+    # Exit a parse tree produced by CompiScriptLanguageParser#funAnon.
+    def exitFunAnon(self, ctx:CompiScriptLanguageParser.FunAnonContext):
         pass
 
 
@@ -305,12 +323,21 @@ class CompiScriptLanguageListener(ParseTreeListener):
         pass
 
 
-    # Enter a parse tree produced by CompiScriptLanguageParser#call.
-    def enterCall(self, ctx:CompiScriptLanguageParser.CallContext):
+    # Enter a parse tree produced by CompiScriptLanguageParser#primaryCall.
+    def enterPrimaryCall(self, ctx:CompiScriptLanguageParser.PrimaryCallContext):
         pass
 
-    # Exit a parse tree produced by CompiScriptLanguageParser#call.
-    def exitCall(self, ctx:CompiScriptLanguageParser.CallContext):
+    # Exit a parse tree produced by CompiScriptLanguageParser#primaryCall.
+    def exitPrimaryCall(self, ctx:CompiScriptLanguageParser.PrimaryCallContext):
+        pass
+
+
+    # Enter a parse tree produced by CompiScriptLanguageParser#funAnonCall.
+    def enterFunAnonCall(self, ctx:CompiScriptLanguageParser.FunAnonCallContext):
+        pass
+
+    # Exit a parse tree produced by CompiScriptLanguageParser#funAnonCall.
+    def exitFunAnonCall(self, ctx:CompiScriptLanguageParser.FunAnonCallContext):
         pass
 
 
