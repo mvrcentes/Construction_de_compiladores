@@ -1,10 +1,7 @@
+import textwrap
 from structures.Symbols.SymbolsClasses import Symbol
 from structures.Types.TypesClasses import Type
 
-import textwrap
-
-# SymbolsTable
-# This class represents a symbol table. It contains a hash map to store symbols.
 class SymbolsTable:
     def __init__(self):
         # The hash map to store symbols, where the key is the symbol's name
@@ -35,44 +32,50 @@ class SymbolsTable:
         return name in self.table
 
     def print_table(self, context_name: str):
-        """Prints the symbol table in a formatted table-like style with cells and wraps large values."""
-        
+        """Prints the symbol table in a formatted table-like style with consistent alignment."""
+
         # Print table header
         print(f"--> Symbol Table for {context_name}:")
         if not self.table:
             print("Symbol table is empty.")
             print("\n")
             return
-        
+
         # Define column widths
-        name_width = 30
-        info_width = 50
+        name_width = 25  # Fixed width for the name column
+        info_width = 80  # Fixed width for the info column
+
+        # Helper function to ensure consistent padding of strings
+        def fixed_width(s, width):
+            return s + ' ' * (width - len(s))
 
         # Print table headers with borders
         print("+" + "-" * (name_width + 2) + "+" + "-" * (info_width + 2) + "+")
-        print(f"| {'Name':<{name_width}} | {'Info':<{info_width}} |")
+        print(f"| {fixed_width('Name', name_width)} | {fixed_width('Info', info_width)} |")
         print("+" + "-" * (name_width + 2) + "+" + "-" * (info_width + 2) + "+")
 
         # Print each row of the symbol table
         for name, symbol in self.table.items():
             symbol_info = str(symbol)
 
-            # Wrap both name and symbol info to fit within the defined widths
-            wrapped_name = textwrap.wrap(name, name_width)
-            wrapped_info = textwrap.wrap(symbol_info, info_width)
+            # Split info logically to maintain semantic meaning in each line
+            wrapped_name = textwrap.wrap(name, name_width, break_long_words=False)
+            wrapped_info = textwrap.wrap(symbol_info, info_width, break_long_words=False)
 
             # Ensure both are of equal length by padding the shorter one
             max_lines = max(len(wrapped_name), len(wrapped_info))
             wrapped_name += [''] * (max_lines - len(wrapped_name))
             wrapped_info += [''] * (max_lines - len(wrapped_info))
 
-            # Print each line
+            # Print each line with alignment
             for n, i in zip(wrapped_name, wrapped_info):
-                print(f"| {n:<{name_width}} | {i:<{info_width}} |")
+                print(f"| {fixed_width(n, name_width)} | {fixed_width(i, info_width)} |")
 
-            print(f"+" + "-" * (name_width + 2) + "+" + "-" * (info_width + 2) + "+")
+            # Print a border after each row
+            print("+" + "-" * (name_width + 2) + "+" + "-" * (info_width + 2) + "+")
 
         print("\n")
 
-        def __repr__(self):
-            return str(self.table)
+
+    def __repr__(self):
+        return str(self.table)

@@ -15,4 +15,3 @@ class Estudiante extends Persona {
 }
 
 
-

@@ -11,12 +11,11 @@ class TextEditor:
         root.configure(bg="#1E1E2E")  # Background color for the window
 
         # Style Configuration
-        self.font = ("Aptos", 12)  # Fuente Aptos
+        self.font = ("Aptos", 16)  # Aumentar tamaño de fuente para mejor claridad
         self.bg_color = "#1E1E2E"  # Fondo oscuro
         self.fg_color = "#D4D4E4"  # Color de texto claro
         self.line_bg_color = "#262738"  # Fondo para líneas (similar a un gris oscuro azulado)
         self.highlight_bg = "#3B4252"  # Fondo resaltado con un tono ligeramente más claro y azulado
-
 
         # Line number area
         self.line_number_bar = tk.Text(root, width=4, padx=5, takefocus=0, border=0,
@@ -61,7 +60,7 @@ class TextEditor:
         self.buttons_frame.pack(fill=tk.X, side=tk.BOTTOM)
 
         style = ttk.Style()
-        style.configure("TButton", padding=6, relief="flat", background="#ffffff", foreground="#000000")
+        style.configure("TButton", font=("Aptos", 14), padding=6, relief="flat", background="#ffffff", foreground="#000000")
 
         self.open_button = ttk.Button(self.buttons_frame, text="Open", command=self.open_file, style="TButton")
         self.open_button.pack(side=tk.LEFT, padx=2)
@@ -198,5 +197,9 @@ class TextEditor:
 
 if __name__ == "__main__":
     root = tk.Tk()
+
+    # Aplicar escalado para mejorar la resolución en pantallas Retina
+    root.tk.call('tk', 'scaling', 2.0)
+
     editor = TextEditor(root)
     root.mainloop()
