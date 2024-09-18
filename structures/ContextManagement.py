@@ -18,9 +18,6 @@ class Context:
     def assign(self, name: str, value: any, type: Type):
         self.symbol_table.assign(name, value, type)
 
-    def replace(self, name: str, symbol: Symbol):
-        self.symbol_table.replace(name, symbol)
-
     def exists(self, name: str):
         return self.symbol_table.exists(name)
     
@@ -71,6 +68,13 @@ class ContextManager:
                 return symbol, context.name
             context = context.parent
 
+        return None, None
+
+    def label_lookup(self, name: str):
+        """Look up a label just in the current context."""
+
+        return self.current_context.lookup(name)
+
 
     def define(self, symbol: Symbol):
         """Define a new symbol in the current context."""
@@ -82,14 +86,10 @@ class ContextManager:
     def assign(self, name: str, value: any, type: Type):
         """Assign a value to an already defined symbol in a context."""
         context = self.exists(name)
-        context.assign(name, value, type)
-
-    def replace(self, name: str, symbol: Symbol, context_name: str):
-        """Replace a symbol in the current context."""
-        if self.contexts[context_name]:
-            self.contexts[context_name].replace(name, symbol)
+        if context:
+            context.assign(name, value, type)
         else:
-            raise KeyError(f"Context {context_name} does not exist.")
+            raise KeyError(f"Symbol {name} is not defined.")
         
     def exists(self, name: str):
         """Check if a symbol exists in the current context or its parents."""
@@ -102,8 +102,8 @@ class ContextManager:
             return None
         else:
             raise RuntimeError("No active context to check symbol existence.")
-
-    def capture_context(self, name: str):
+    
+    def capture_context_for(self, name: str):
         """Capture the current context for closure purposes."""
         if name in self.contexts:
             context = self.contexts[name]
@@ -123,6 +123,10 @@ class ContextManager:
     def get_context_name(self):
         """Get the name of the current context."""
         return self.current_context.name
+    
+    def get_symbol_table(self):
+        """Get the symbol table of the current context."""
+        return self.current_context.symbol_table.table
 
     def __repr__(self):
         return f"ContextManager(current_context={self.current_context}, contexts={self.contexts})"
