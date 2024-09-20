@@ -7,6 +7,7 @@ from lexer_parser.CompiScriptLanguageLexer import CompiScriptLanguageLexer
 from lexer_parser.CompiScriptLanguageParser import CompiScriptLanguageParser
 
 from semantic.SymbolGenerator import SymbolGenerator
+from ir.TacGenerator import TacGenerator
 
 def generate_dot_tree(tree, rule_names):
     """Generate a DOT representation of the parse tree."""
@@ -40,18 +41,28 @@ def main(argv):
     lexer = CompiScriptLanguageLexer(input_stream)
     stream = CommonTokenStream(lexer)
     parser = CompiScriptLanguageParser(stream)
-    tree = parser.program()  # We are using 'program' since this is the starting rule based on our CompiScriptLanguage grammar
+    tree = parser.program()  # Start parsing from the 'program' rule in the grammar
 
-    # Generate a DOT representation of the parse tree
+    # Generate a DOT representation of the parse tree (if '--pdf' argument is provided)
     if len(argv) > 2 and argv[2] == '--pdf':
         dot_tree = generate_dot_tree(tree, parser.ruleNames)
-        # dot_tree.render('parse_tree', format='pdf', cleanup=True)
         dot_tree.view('parse_tree', cleanup=True)
-
     else:
-        # Generate the symbols tables
+        # Create the symbol generator to walk the tree
         symbol_generator = SymbolGenerator()
-        symbol_generator.visit(tree)
+        
+        # Visit the tree to generate symbol tables
+        context_manager = symbol_generator.visit(tree)
+
+        # After visiting, check if there are any errors
+        if symbol_generator.error_manager.has_errors():
+            # If errors exist, print them
+            symbol_generator.error_manager.display_errors()
+        else:
+            # If no errors, proceed to generate the intermediate code (TAC)
+            tac_generator = TacGenerator(context_manager)
+            tac_generator.visit(tree)
 
 if __name__ == '__main__':
     main(sys.argv)
+
