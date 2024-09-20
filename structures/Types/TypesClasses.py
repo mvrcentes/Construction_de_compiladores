@@ -85,10 +85,17 @@ class StringType(Primitive):
         return super(StringType, cls).__new__(cls, "string")
 
 class Reference(Type):
-    def __init__(self, name):
+    def __init__(self, name, reference_type=None):
         super().__init__(name)
+        self.reference_type = reference_type
 
 # You can define specific reference types if needed, e.g., for pointers, arrays, etc.
+class ArrayType(Reference):
+    def __init__(self, name, reference_type):
+        super().__init__(name, reference_type)
+
+    def __str__(self):
+        return f"{self.name}[{self.reference_type}]" if self.reference_type else self.name
 
 # Class
 class ClassType(Type):
