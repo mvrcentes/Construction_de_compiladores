@@ -51,6 +51,29 @@ class Variable(Symbol):
 
     def __repr__(self):
         return f"Variable (type={self.type}, value={self.value})"
+    
+# Array Symbol
+# This class represents an array symbol. It contains a value.
+class ArraySymbol(Symbol):
+    def __init__(self, name: str, size: int, type: Type = NilType(), value: any = None):
+        super().__init__(name, type)
+        self.size = size
+        self.value = value
+
+    # Set new value
+    def set_value(self, value: any):
+        self.value = value
+
+    def __repr__(self):
+        return f"Array (type={self.type}, value={self.value})"
+
+class LabelSymbol(Symbol):
+    def __init__(self, name: str, type: Type = AnyType(), value: any = None):
+        super().__init__(name, type)
+        self.value = value
+
+    def __str__(self):
+        return f"Label: {self.name}"
 
 # Parameter
 # This class represents a parameter symbol. It contains a value.
@@ -141,6 +164,9 @@ class ClassSymbol(Symbol):
         self.methods[method.name] = method
 
     def lookup_method(self, name: str):
+        """
+        Lookup a method in this class or its superclass.
+        """
         if name in self.methods:
             return self.methods[name]
         elif self.superclass:
@@ -155,7 +181,7 @@ class ClassSymbol(Symbol):
 # Instance
 # This class represents an instance of a class symbol.    
 class Instance(Variable):
-    def __init__(self, name: str, class_symbol: ClassSymbol, type: Type = ClassType):
+    def __init__(self, name: str, class_symbol: 'ClassSymbol', type: Type = ClassType):
         super().__init__(name, type)
         self.class_symbol = class_symbol
         self.fields = {}
@@ -165,5 +191,10 @@ class Instance(Variable):
             raise NameError(f"Field {field.name} already defined in instance of class {self.class_symbol.name}.")
         self.fields[field.name] = field
 
+    def get_field(self, name: str):
+        return self.fields.get(name)
+
     def __repr__(self):
-        return f"Instance(class=[{self.class_symbol.name}])"
+        fields_str = ", ".join(str(field) for field in self.fields.values())
+        class_str = f"Class({self.class_symbol.name})" if self.class_symbol else ""
+        return f"Instance(class=[{class_str}], fields=[{fields_str}])"
