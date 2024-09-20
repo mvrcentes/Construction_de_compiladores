@@ -29,7 +29,7 @@ class SymbolGenerator(CompiScriptLanguageVisitor):
         self.types_table.add_type(AnyType())
 
         # Flag to handle nested assignments
-        self.recursive = False
+        self.recursive_assign = False
 
         self.reserved_keywords = [
             "class", "else", "false", "for", "if", "null", "print", "return", "true", "var", "while"
@@ -346,7 +346,9 @@ class SymbolGenerator(CompiScriptLanguageVisitor):
         Evaluate the expression to be printed, ensuring it's valid.
         """
         # Evaluate the expression that is to be printed
-        self.visit(ctx.expression())
+        value, type = self.visit(ctx.expression())
+
+        print("Print statement:", value)
         
         return None, VoidType()  # Return a placeholder value and type
 
@@ -471,21 +473,40 @@ class SymbolGenerator(CompiScriptLanguageVisitor):
 
             # Check if a member access is being assigned to
             if value == "this":
-                field_name = ctx.IDENTIFIER().getText()
-                value, type = self.visit(ctx.assignment())
+                context_name = self.context_manager.get_context_name().split('.')
+                if context_name[0] != "Method":
+                    self.error_manager.add_error(f"Cannot assign to 'this' outside of a method context.")
+                    return None, VoidType()  # Return a placeholder value and type
+                
+                else:
+                    field_name = ctx.IDENTIFIER().getText()
 
-                # class name and method name
-                class_name = self.context_manager.get_context_name().split('.')[1]
-                method_name = self.context_manager.get_context_name().split('.')[2]
+                    self.recursive_assign = True  # Set the recursive flag to handle chained assignments
+                    value, type = self.visit(ctx.assignment())
 
-                self.context_manager.exit_context()  # Exit the method context
-                # Define the field in the instance context
-                field = Field(name=field_name, type=type, value=value)
-                self.context_manager.define(field)
+                    # class name and method name
+                    class_name = self.context_manager.get_context_name().split('.')[1]
+                    method_name = self.context_manager.get_context_name().split('.')[2]
+                    self.context_manager.exit_context()  # Exit the method context
+                    
+                    if context_name[2] == "init":
+                        # Define the field in the instance context
+                        field = Field(name=field_name, type=type, value=value)
+                        self.context_manager.define(field)
+                        
+                    else:
+                        # Assign the value to the field in the instance context
+                        self.context_manager.assign(field_name, value, type)
+                    
+                    self.context_manager.enter_context(f"Method.{class_name}.{method_name}")  # Re-enter the method context
 
-                self.context_manager.enter_context(f"Method.{class_name}.{method_name}")  # Re-enter the method context
+                    self.recursive_assign = False  # Reset the recursive flag
 
-                return field, type
+                    if self.recursive_assign:
+                        return value, type  # Return the value for chained assignments
+                    
+            else:
+                self.error_manager.add_error(f"Cannot assign to a method call or member access.")
 
         else:
             # Handling simple variable assignment
@@ -495,7 +516,7 @@ class SymbolGenerator(CompiScriptLanguageVisitor):
             if not self.context_manager.exists(var_name):
                 self.error_manager.add_error(f"Variable {var_name} is not defined.")
 
-            self.recursive = True  # Set the recursive flag to handle chained assignments
+            self.recursive_assign = True  # Set the recursive flag to handle chained assignments
 
             # Evaluate the right-hand side first
             value, type = self.visit(ctx.assignment())
@@ -503,9 +524,9 @@ class SymbolGenerator(CompiScriptLanguageVisitor):
             # Assign the value to the current variable
             self.context_manager.assign(var_name, value, type)
 
-            self.recursive = False  # Reset the recursive flag
+            self.recursive_assign = False  # Reset the recursive flag
 
-            if self.recursive:
+            if self.recursive_assign:
                 return value, type  # Return the value for chained assignments
 
         return None, VoidType() # Return a placeholder value and type
@@ -795,30 +816,77 @@ class SymbolGenerator(CompiScriptLanguageVisitor):
             elif ctx.getChild(i).getText() == '.':
                 member_name = ctx.getChild(i + 1).getText() # Get the member name
 
-                if primary_value.__class__ != Instance:
-                    self.error_manager.add_error(f"'{primary_value}' is not an instance of a class.")
-                    return None, VoidType()
-                
-                self.context_manager.enter_context(primary_value.name)  # Enter the instance context
+                if primary_value.__class__ == Instance:
+                    self.context_manager.enter_context(primary_value.name)  # Enter the instance context
 
-                # Check for attribute (field) access
-                attribute = self.context_manager.lookup(member_name)[0]
-                print(attribute)
-                if attribute:
-                    primary_value, primary_type = attribute.value, attribute.type
-                    i = i + 2  # Skip the dot and the member name
-                else:
-                    # Check for method access
-                    method = self.context_manager.lookup(member_name)[0]
-                    if method:
-                        primary_value, primary_type = method.name, method.type
-                        i = i + 4 if ctx.arguments() else i + 3  # Skip the arguments and the closing parenthesis
+                    # Check for attribute (field) access
+                    field_symbol = self.context_manager.lookup(member_name)[0]
+
+                    if field_symbol.__class__ == Field:
+                        primary_value, primary_type = field_symbol.value, field_symbol.type
+                        i = i + 2  # Skip the dot and the member name
                     else:
-                        self.error_manager.add_error(f"'{member_name}' not found in class {primary_value.class_symbol.name}.")
-                        return None, VoidType()
+                        class_name = primary_value.class_symbol.name
+                        method_symbol = self.context_manager.lookup(f"{class_name}.{member_name}")[0]
+                        if method_symbol.__class__ == Method:
+                            # Evaluate the arguments
+                            arguments = self.visit(ctx.getChild(i + 3)) if ctx.arguments() else []
+                            i = i + 5 if ctx.arguments() else i + 4  # Skip the arguments and the closing parenthesis
+
+                            parameters = method_symbol.get_parameters()[1:] # Skip the 'this' parameter
+
+                            # Check if the number of arguments matches the function's parameters
+                            if len(arguments) != len(parameters): 
+                                self.error_manager.add_error(f"Method {member_name} expected {len(parameters)} arguments, got {len(arguments)}.")
+
+                            # Check for recursive calls
+                            if self.context_manager.check_recursive_context(f"Method.{class_name}.{member_name}"):
+                                # Check if the arguments match the function's parameters
+                                for arg, param in zip(arguments, parameters):
+                                    if arg[1] != param.type:
+                                        self.error_manager.add_error(f"Recursive method {member_name} expected argument of type {param.type.__str__()}, got {arg[1].__str__()}.")
+
+                                return "any", AnyType()  # Return a placeholder value and type
+
+                            # Capture the current context for closure purposes
+                            self.context_manager.capture_context_for(f"Method.{class_name}.{member_name}")
+
+                            # Enter a new context for the method call
+                            self.context_manager.enter_context(f"Method.{class_name}.{member_name}")
+
+                            # Simulate the function execution by assigning arguments to parameters
+                            for arg, param in zip(arguments, parameters):
+                                self.context_manager.assign(param.name, arg[0], arg[1])
+
+                            # Visit the function body (block) in this new context
+                            value, return_type = self.visit(method_symbol.get_block())
+
+                            # Exit the function call context
+                            self.context_manager.exit_context()
+
+                            # Update the primary_value and primary_type to reflect the function's return
+                            primary_value, primary_type = value, return_type
+                        else:
+                            self.error_manager.add_error(f"'{member_name}' not found in class {primary_value.class_symbol.name}.")
+                            return None, VoidType()
+                        
+                    self.context_manager.exit_context()  # Exit the instance context
+                    self.context_manager.enter_context(main_context)  # Return to the main context
                 
-                self.context_manager.exit_context()  # Exit the instance context
-                self.context_manager.enter_context(main_context)  # Return to the main context
+                elif primary_value == "this":
+                    # Check for attribute (field) access
+                    field_symbol = self.context_manager.lookup(member_name)[0]
+
+                    if field_symbol.__class__ == Field:
+                        # field value and type
+                        primary_value, primary_type = field_symbol.value, field_symbol.type
+                        i = i + 2
+                    else:
+                        self.error_manager.add_error(f"'{member_name}' not found in class {self.context_manager.get_context_name().split('.')[1]}.")
+                        return None, VoidType()
+                    
+                elif primary_value == "super":
+                    return None, VoidType()
 
         return primary_value, primary_type
 
@@ -884,7 +952,10 @@ class SymbolGenerator(CompiScriptLanguageVisitor):
 
     # Visit a parse tree produced by CompiScriptLanguageParser#super.
     def visitSuper(self, ctx:CompiScriptLanguageParser.SuperContext):
-        return self.visitChildren(ctx)
+        """
+        Handle the 'super' keyword.
+        """ 
+        return ctx.getChild(0).getText(), AnyType()
 
 
     # Visit a parse tree produced by CompiScriptLanguageParser#function.
