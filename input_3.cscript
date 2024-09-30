@@ -1,8 +1,41 @@
-fun suma(a,b){
-   return a+b;
+class Persona {
+  init(nombre, edad) {
+    this.nombre = nombre;
+    this.edad = edad;
+    this.color = "rojo";
+  }
+
+  saludar() {
+    print "Hola, mi nombre es " + this.nombre;
+  }
+
+  incrementarEdad(anos) {
+    this.edad = this.edad + anos;
+    print "Ahora tengo " + this.edad + " anios.";
+  }
 }
 
-suma(1,2);
+fun main(){
+   var nombre = "Erick";
+
+   var juan = new Persona(nombre, 20);
+
+   for (var i = 1; i <= 5; i = i + 1) {
+     if (i % 2 == 0) {
+       print i + " es par";
+     } else {
+       print i + " es impar";
+     }
+   }
+
+   // Expresion aritmetica
+   var resultado = (1 * 2) + (5 - 3) / 2;
+   print "Resultado de la expresion: " + resultado;
+}
+
+main();
+
+
 
 
 

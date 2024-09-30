@@ -1,19 +1,17 @@
-fun factorial ( n ) {
-   if ( n <= 1) return 1;
-   return n * factorial(n-1);
+fun fibonacci(n) {
+  if (n <= 1) {
+    return n;
+  } else {
+    var a = fibonacci(n - 1);
+    var b = fibonacci(n - 2);
+    return a + b;
+  }
 }
 
-fun fibonacci ( n ) {
-   if ( n <= 1) return n ;
-   return fibonacci ( n - 1) + fibonacci ( n - 2) ;
+fun main(){
+   var numero = 10;
+   var resultado = fibonacci(numero);
+   print "El termino " + numero + " de la serie de Fibonacci es: " + resultado;
 }
 
-var x = factorial(5);
-var y = fibonacci(4);
-
-
-
-
-
-
-
+main();

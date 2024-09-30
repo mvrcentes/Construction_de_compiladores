@@ -233,21 +233,39 @@ class CompiScriptLanguageListener(ParseTreeListener):
         pass
 
 
-    # Enter a parse tree produced by CompiScriptLanguageParser#nestedAssigment.
-    def enterNestedAssigment(self, ctx:CompiScriptLanguageParser.NestedAssigmentContext):
+    # Enter a parse tree produced by CompiScriptLanguageParser#nestedAssignment.
+    def enterNestedAssignment(self, ctx:CompiScriptLanguageParser.NestedAssignmentContext):
         pass
 
-    # Exit a parse tree produced by CompiScriptLanguageParser#nestedAssigment.
-    def exitNestedAssigment(self, ctx:CompiScriptLanguageParser.NestedAssigmentContext):
+    # Exit a parse tree produced by CompiScriptLanguageParser#nestedAssignment.
+    def exitNestedAssignment(self, ctx:CompiScriptLanguageParser.NestedAssignmentContext):
         pass
 
 
-    # Enter a parse tree produced by CompiScriptLanguageParser#logicOrAssigment.
-    def enterLogicOrAssigment(self, ctx:CompiScriptLanguageParser.LogicOrAssigmentContext):
+    # Enter a parse tree produced by CompiScriptLanguageParser#logicOrAssignment.
+    def enterLogicOrAssignment(self, ctx:CompiScriptLanguageParser.LogicOrAssignmentContext):
         pass
 
-    # Exit a parse tree produced by CompiScriptLanguageParser#logicOrAssigment.
-    def exitLogicOrAssigment(self, ctx:CompiScriptLanguageParser.LogicOrAssigmentContext):
+    # Exit a parse tree produced by CompiScriptLanguageParser#logicOrAssignment.
+    def exitLogicOrAssignment(self, ctx:CompiScriptLanguageParser.LogicOrAssignmentContext):
+        pass
+
+
+    # Enter a parse tree produced by CompiScriptLanguageParser#arrayAssignment.
+    def enterArrayAssignment(self, ctx:CompiScriptLanguageParser.ArrayAssignmentContext):
+        pass
+
+    # Exit a parse tree produced by CompiScriptLanguageParser#arrayAssignment.
+    def exitArrayAssignment(self, ctx:CompiScriptLanguageParser.ArrayAssignmentContext):
+        pass
+
+
+    # Enter a parse tree produced by CompiScriptLanguageParser#arrayAccess.
+    def enterArrayAccess(self, ctx:CompiScriptLanguageParser.ArrayAccessContext):
+        pass
+
+    # Exit a parse tree produced by CompiScriptLanguageParser#arrayAccess.
+    def exitArrayAccess(self, ctx:CompiScriptLanguageParser.ArrayAccessContext):
         pass
 
 
@@ -431,6 +449,24 @@ class CompiScriptLanguageListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by CompiScriptLanguageParser#newArray.
+    def enterNewArray(self, ctx:CompiScriptLanguageParser.NewArrayContext):
+        pass
+
+    # Exit a parse tree produced by CompiScriptLanguageParser#newArray.
+    def exitNewArray(self, ctx:CompiScriptLanguageParser.NewArrayContext):
+        pass
+
+
+    # Enter a parse tree produced by CompiScriptLanguageParser#primaryArrayAccess.
+    def enterPrimaryArrayAccess(self, ctx:CompiScriptLanguageParser.PrimaryArrayAccessContext):
+        pass
+
+    # Exit a parse tree produced by CompiScriptLanguageParser#primaryArrayAccess.
+    def exitPrimaryArrayAccess(self, ctx:CompiScriptLanguageParser.PrimaryArrayAccessContext):
+        pass
+
+
     # Enter a parse tree produced by CompiScriptLanguageParser#newExpression.
     def enterNewExpression(self, ctx:CompiScriptLanguageParser.NewExpressionContext):
         pass
@@ -464,6 +500,15 @@ class CompiScriptLanguageListener(ParseTreeListener):
 
     # Exit a parse tree produced by CompiScriptLanguageParser#arguments.
     def exitArguments(self, ctx:CompiScriptLanguageParser.ArgumentsContext):
+        pass
+
+
+    # Enter a parse tree produced by CompiScriptLanguageParser#array.
+    def enterArray(self, ctx:CompiScriptLanguageParser.ArrayContext):
+        pass
+
+    # Exit a parse tree produced by CompiScriptLanguageParser#array.
+    def exitArray(self, ctx:CompiScriptLanguageParser.ArrayContext):
         pass
 
 
