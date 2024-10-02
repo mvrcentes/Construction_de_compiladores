@@ -658,7 +658,9 @@ class SymbolGenerator(CompiScriptLanguageVisitor):
             
             # Check if both operands are strings for concatenation
             if operator == '+' and left_type == StringType() or right_type == StringType():
-                left_value, left_type = f"{str(left_value).strip('"')}{str(right_value).strip('"')}", StringType()
+                # Implementación corregida
+                left_value = str(left_value).strip('"') + str(right_value).strip('"')
+                left_type = StringType()
             else:
                 # Widening the type if necessary
                 type = DoubleType() if left_type == DoubleType() or right_type == DoubleType() else IntType()
