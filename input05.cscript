@@ -1,0 +1,22 @@
+fun main(){
+   var a = 0;
+   var z = 1;
+   var c = 2;
+   var d = 3;
+   var e = 4;
+   var f = 5;
+   var g = 6;
+   var h = 7;
+   var i = 8;
+   var p = 9;
+
+   var k = 10;
+   print(a);
+   print(d);
+   print(p);
+}
+
+main();
+
+
+

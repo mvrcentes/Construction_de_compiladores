@@ -1,0 +1,51 @@
+class Producto {
+  init(nombre, precio, cantidad) {
+    this.nombre = nombre;
+    this.precio = precio;
+    this.cantidad = cantidad;
+  }
+
+  calcularValorInventario() {
+    var valor = this.precio * this.cantidad;
+    print "Valor del inventario de " + this.nombre + ": " + valor;
+    return valor;
+  }
+
+  vender(cantidadVendida) {
+     this.cantidad = this.cantidad - cantidadVendida;
+     print "Se vendieron " + cantidadVendida + " unidades de " + this.nombre;
+  }
+
+  restock(cantidadAgregada) {
+    this.cantidad = this.cantidad + cantidadAgregada;
+    print "Se aniadieron " + cantidadAgregada + " unidades de " + this.nombre + " al inventario.";
+  }
+}
+
+class Categoria {
+  init(nombre) {
+    this.nombre = nombre;
+    this.productos = [];
+  }
+
+  agregarProducto(producto) {
+    print "Producto aniadido a la categoria " + this.nombre;
+  }
+
+  mostrarValorTotal() {
+    var valorTotal = this.calcularValorTotalRecursivo(0);
+    print "El valor total de la categoria " + this.nombre + " es: " + valorTotal;
+  }
+}
+
+
+fun main(){
+   // Ejemplos de uso
+   var electronica = new Categoria("Electronica");
+   var laptop = new Producto("Laptop", 1000, 10);
+   var smartphone = new Producto("Smartphone", 500, 20);
+   var tablet = new Producto("Tablet", 300, 15);
+}
+
+main();
+

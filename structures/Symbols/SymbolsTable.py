@@ -34,11 +34,11 @@ class SymbolsTable:
         """Check if a symbol exists in the table."""
         return name in self.table
 
-    def print_table(self, context_name: str):
+    def print_table(self, context_name: str, parent_name: str = None):
         """Prints the symbol table in a formatted table-like style with cells and wraps large values."""
         
         # Print table header
-        print(f"--> Symbol Table for {context_name}:")
+        print(f"--> Symbol Table for {context_name} | Parent: {parent_name if parent_name else 'None'}")
         if not self.table:
             print("Symbol table is empty.")
             print("\n")

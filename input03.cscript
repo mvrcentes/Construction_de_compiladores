@@ -1,0 +1,11 @@
+fun main(){
+   var a = 1;
+   var c = 2;
+
+   var x = a + c;
+   x = x * 2;
+   print(x);
+}
+
+main();
+

@@ -1,0 +1,29 @@
+class Persona {
+  init(nombre, edad) {
+    this.nombre = nombre;
+    this.edad = edad;
+    this.color = "rojo";
+  }
+
+  saludar() {
+    print "Hola, mi nombre es " + this.nombre;
+  }
+
+  incrementarEdad(anos) {
+    this.edad = this.edad + anos;
+    print "Ahora tengo " + this.edad + " anios.";
+  }
+}
+
+var nombre = "Erick";
+
+var juan = new Persona(nombre, 20);
+juan.saludar();    // Salida: Hola, mi nombre es Erick
+
+for (var i = 1; i <= 5; i = i + 1) {
+  if (i % 2 == 0) {
+    print i + " es par";
+  } else {
+    print i + " es impar";
+  }
+}

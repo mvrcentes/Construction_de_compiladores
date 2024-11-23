@@ -22,7 +22,7 @@ class Context:
         return self.symbol_table.exists(name)
     
     def print_symbol_table(self):
-        self.symbol_table.print_table(self.name)
+        self.symbol_table.print_table(self.name, self.parent.name if self.parent else None)
 
     def set_context_class(self, class_symbol):
         self.class_symbol = class_symbol

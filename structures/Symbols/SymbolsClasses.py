@@ -24,7 +24,7 @@ class Symbol:
         return self.type
         
     def __repr__(self):
-        return f"Symbol (type={self.type})"
+        return f"Symbol (type={self.type} size={self.type.size})"
 
 # Constant
 # This class represents a constant symbol. It contains a value.
@@ -36,7 +36,7 @@ class Constant(Symbol):
         self.value = value
 
     def __repr__(self):
-        return f"Constant (type={self.type}, value={self.value})"
+        return f"Constant (type={self.type}, size={self.type.size}, value={self.value})"
 
 # Variable
 # This class represents a variable symbol. It contains a value.    
@@ -50,7 +50,7 @@ class Variable(Symbol):
         self.value = value
 
     def __repr__(self):
-        return f"Variable (type={self.type}, value={self.value})"
+        return f"Variable (type={self.type}, size={self.type.size}, value={self.value})"
     
 # Array Symbol
 # This class represents an array symbol. It contains a value.
@@ -65,7 +65,7 @@ class ArraySymbol(Symbol):
         self.value = value
 
     def __repr__(self):
-        return f"Array (type={self.type}, value={self.value})"
+        return f"Array (type={self.type}, size={self.size}, value={self.value})"
 
 class LabelSymbol(Symbol):
     def __init__(self, name: str, type: Type = AnyType(), value: any = None):
@@ -87,7 +87,7 @@ class Parameter(Symbol):
         self.value = value
 
     def __repr__(self):
-        return f"Parameter (type={self.type}, value={self.value})"
+        return f"Parameter (type={self.type}, size={self.type.size}, value={self.value})"
 
 # Function
 # This class represents a function symbol. It contains a return type and parameters.
@@ -120,7 +120,7 @@ class Function(Symbol):
 
     def __repr__(self):
         params_str = ", ".join(str(param) for param in self.parameters)
-        return f"Function (return_type={self.type}, parameters=[{params_str}])"
+        return f"Function (return_type={self.type}, size={self.type.size}, parameters=[{params_str}])"
 
 # Field
 # This class represents a field symbol. It contains a value.    
@@ -138,7 +138,7 @@ class Field(Symbol):
         return self.value
 
     def __repr__(self):
-        return f"Field (type={self.type}, value={self.value})"
+        return f"Field (type={self.type}, size={self.type.size}, value={self.value})"
 
 # Method
 # This class represents a method symbol. It contains a return type, parameters, and a flag to indicate if it is static.
@@ -148,7 +148,7 @@ class Method(Function):
 
     def __repr__(self):
         params_str = ", ".join(str(param) for param in self.parameters)
-        return f"Method(name={self.name}, return_type={self.type}, parameters=[{params_str}])"
+        return f"Method(name={self.name}, return_type={self.type}, size={self.type.size}, parameters=[{params_str}])"
 
 # ClassSymbol
 # This class represents a class symbol. It contains fields and methods.    

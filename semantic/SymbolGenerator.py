@@ -99,7 +99,6 @@ class SymbolGenerator(CompiScriptLanguageVisitor):
             if superclass.__class__ != ClassSymbol:
                 self.error_manager.add_error(f"TypeError: {superclass_name} is not a class.")
 
-
         # Create a new class symbol
         self.types_table.add_type(ClassType(class_name))
         class_symbol = ClassSymbol(name=class_name, superclass=superclass)
@@ -107,15 +106,37 @@ class SymbolGenerator(CompiScriptLanguageVisitor):
         # Define the class symbol in the current context
         self.context_manager.define(class_symbol)
 
+        parent_symbol_table = None
+
         # If the class has a superclass, enter its context
         if superclass:
             self.context_manager.enter_context(f"Class.{superclass_name}")
+            parent_symbol_table = self.context_manager.current_context.symbol_table
 
         # Create a new context for the class
         self.context_manager.create_context(f"Class.{class_name}", parent=self.context_manager.current_context)
 
         # Enter a new context for this class
         self.context_manager.enter_context(f"Class.{class_name}")
+
+        # Add methods and fields to the class symbol
+        if parent_symbol_table:
+            # Copy the superclass's methods to the current class
+            for method in superclass.methods.values():
+                method_name = method.name.split('.')[-1]
+                # Add the parent methods to the current class, excluding the constructor
+                if method_name != "init":
+                    #  Copy the method to the current class
+                    method.name = f"{class_name}.{method_name}"
+                    self.context_manager.create_context(f"Method.{class_name}.{method_name}", parent=self.context_manager.current_context)
+                    class_symbol.add_method(method)
+                    self.context_manager.define(method)
+                    
+                    # Copy the method's parameters to the current context, excluding 'this'
+                    for param in method.parameters:
+                        if param.name != "this":
+                            print(param.name)
+                            self.context_manager.define(param)
 
         # Visit all methods in the class
         for func in ctx.function():
@@ -658,9 +679,7 @@ class SymbolGenerator(CompiScriptLanguageVisitor):
             
             # Check if both operands are strings for concatenation
             if operator == '+' and left_type == StringType() or right_type == StringType():
-                # Implementación corregida
-                left_value = str(left_value).strip('"') + str(right_value).strip('"')
-                left_type = StringType()
+                left_value, left_type = f"{str(left_value).strip('"')}{str(right_value).strip('"')}", StringType()
             else:
                 # Widening the type if necessary
                 type = DoubleType() if left_type == DoubleType() or right_type == DoubleType() else IntType()
@@ -677,6 +696,7 @@ class SymbolGenerator(CompiScriptLanguageVisitor):
         """
         if not self.context_manager.exists(ctx.IDENTIFIER().getText()):
             self.error_manager.add_error(f"Symbol {ctx.IDENTIFIER().getText()} is not defined.")
+            return None, VoidType()
         
         symbol, _ = self.context_manager.lookup(ctx.IDENTIFIER().getText())
 
@@ -829,7 +849,10 @@ class SymbolGenerator(CompiScriptLanguageVisitor):
                         i = i + 2  # Skip the dot and the member name
                     else:
                         class_name = primary_value.class_symbol.name
+                        #parent_class_name = primary_value.class_symbol.superclass.name if primary_value.class_symbol.superclass else None
+
                         method_symbol = self.context_manager.lookup(f"{class_name}.{member_name}")[0]
+
                         if method_symbol.__class__ == Method:
                             # Evaluate the arguments
                             arguments = self.visit(ctx.getChild(i + 3)) if ctx.arguments() else []
@@ -1057,6 +1080,10 @@ class SymbolGenerator(CompiScriptLanguageVisitor):
             instance = Instance(f"Instance.{class_name}.{id(ctx)}",class_symbol, class_type)
 
             self.context_manager.define(instance) # Define the instance in the current context
+
+            # Evaluate the arguments in the current context
+            arguments = self.visit(ctx.arguments()) if ctx.arguments() else []
+
             self.context_manager.enter_context(f"Class.{class_name}") # Enter the class context
 
             # Create a new context for instance creation
@@ -1068,9 +1095,6 @@ class SymbolGenerator(CompiScriptLanguageVisitor):
             # Capture the current context for closure purposes
             self.context_manager.capture_context_for(f"Method.{class_name}.init")
             self.context_manager.enter_context(f"Method.{class_name}.init")
-
-            # Evaluate the arguments
-            arguments = self.visit(ctx.arguments()) if ctx.arguments() else []
 
             parameters = constructor.get_parameters()[1:]  # Skip the 'this' parameter
 

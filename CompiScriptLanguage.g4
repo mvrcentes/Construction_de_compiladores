@@ -65,7 +65,7 @@ primary: 'true'                    # true
         | STRING                   # string
         | IDENTIFIER               # id 
         | '(' expression ')'       # nestedExpression
-        | 'super' '.' IDENTIFIER   # super
+        | 'super'                  # super
         | newExpression            # newInstance
         | array                    # newArray
         | arrayAccess              # primaryArrayAccess

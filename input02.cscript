@@ -1,0 +1,17 @@
+fun main(){
+   var var1 = 0;
+   var var2 = 1;
+   var var3 = 2;
+
+   var x;
+
+   if(var2<var1 or var1==0){
+      x = 0;
+   }else{
+      x = 1;
+   }
+
+   print(x);
+}
+
+main();

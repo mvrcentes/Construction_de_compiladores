@@ -8,6 +8,7 @@ from lexer_parser.CompiScriptLanguageParser import CompiScriptLanguageParser
 
 from semantic.SymbolGenerator import SymbolGenerator
 from ir.TacGenerator import TacGenerator
+from mips.CodeGenerator import CodeGenerator
 
 def generate_dot_tree(tree, rule_names):
     """Generate a DOT representation of the parse tree."""
@@ -62,6 +63,15 @@ def main(argv):
             # If no errors, proceed to generate the intermediate code (TAC)
             tac_generator = TacGenerator(context_manager)
             tac_generator.visit(tree)
+
+            code_generator = CodeGenerator("output.tac")
+            mips_code = code_generator.generate_mips_code()
+
+            # Print or write the MIPS code to a file
+            for line in mips_code:
+                print(line)
+
+            code_generator.write_mips_to_file("output.asm")        
 
 if __name__ == '__main__':
     main(sys.argv)

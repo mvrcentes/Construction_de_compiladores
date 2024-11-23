@@ -34,7 +34,7 @@ class IRManager:
             # Emit TAC for the operation and generate a new temp
             temp = self.get_new_temp()
 
-            self.emit(f"\t{temp} = {expr_str};\n")
+            self.emit(f"\t{temp} = {expr_str} ;\n")
             
             # Store the result in the cache
             self.expr_cache[expr_str] = temp

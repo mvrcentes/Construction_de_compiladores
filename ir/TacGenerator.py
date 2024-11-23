@@ -27,9 +27,12 @@ class TacGenerator(CompiScriptLanguageVisitor):
         self.visitChildren(ctx)
         self.context_manager.exit_context()  # Exit global context
         
-        #return self.code_generator.get_code()
+        # Return self.code_generator.get_code()
         print(self.ir_manager.get_code())
 
+        # Write the TAC to a file
+        with open("output.tac", "w") as tac_file:
+            tac_file.write(self.ir_manager.get_code())
 
     # Visit a parse tree produced by CompiScriptLanguageParser#classDeclaration.
     def visitClassDeclaration(self, ctx:CompiScriptLanguageParser.ClassDeclarationContext):
@@ -100,10 +103,14 @@ class TacGenerator(CompiScriptLanguageVisitor):
             self.ir_manager.emit(f"\t{var_name} = alloc {array_size * 4}\n")  # Emit TAC for array allocation (4 bytes per element assumed)
         else:
             var_name = ctx.IDENTIFIER().getText()
+
+            if self.context_manager.get_context_name()== "Main.global" or self.context_manager.get_context_name().split(".")[1] == "main":
+                self.ir_manager.emit(f"\tdata {var_name}\n")
+
             # Handle regular variable declaration and assignment
             if ctx.expression():
                 value = self.visit(ctx.expression())  # Visit and evaluate the expression on the right-hand side
-                self.ir_manager.emit(f"\t{var_name} = {value}\n")  # Emit TAC for the assignment
+                self.ir_manager.emit(f"\t{var_name} = {value} ;\n")  # Emit TAC for the assignment
         
         return var_name
 
@@ -194,7 +201,7 @@ class TacGenerator(CompiScriptLanguageVisitor):
         self.context_manager.define(LabelSymbol("Label.end", VoidType(), next_label))
 
         # Emit the start label
-        self.ir_manager.emit(f"\n\t{start_label}: ")
+        self.ir_manager.emit(f"\n\t{start_label}:\n")
 
         if ctx.expression(0):
             self.visit(ctx.expression(0))  # Visit the condition
@@ -238,13 +245,13 @@ class TacGenerator(CompiScriptLanguageVisitor):
         self.visit(ctx.expression())
 
         # Emit the code for the 'then' part
-        self.ir_manager.emit(f"\n\t{true_label}: ")
+        self.ir_manager.emit(f"\n\t{true_label}:\n")
         self.visit(ctx.statement(0))  # Visit the 'then' branch
 
         # Emit the code for the 'else' part, if it exists
         if ctx.statement(1):
             self.ir_manager.emit(f"\tgoto {next_label}\n")
-            self.ir_manager.emit(f"\n\t{false_label}: ")
+            self.ir_manager.emit(f"\n\t{false_label}:\n")
             self.visit(ctx.statement(1))  # Visit the 'else' branch
 
         # Emit the next label
@@ -260,20 +267,9 @@ class TacGenerator(CompiScriptLanguageVisitor):
         Visit the 'print' statement node and emit TAC for the operations.
         """
         arg = self.visit(ctx.expression())  # Visit the expression
-        arg_temp = self.ir_manager.get_new_temp()
-        self.ir_manager.emit(f"\t{arg_temp} = {arg};\n")
-        
-        # Emit the push parameters
-        self.ir_manager.emit(f"\tPushParam {arg_temp};\n")
+        self.ir_manager.emit(f"\tLCall print {arg} ;\n")
 
-        # Emit the function call
-        temp = self.ir_manager.get_new_temp()
-        self.ir_manager.emit(f"\t{temp} = LCall print;\n")
-
-        # Pop the parameters
-        self.ir_manager.emit(f"\tPopParams 4;\n")
-
-        return temp
+        return None
 
 
     # Visit a parse tree produced by CompiScriptLanguageParser#returnStmt.
@@ -303,7 +299,7 @@ class TacGenerator(CompiScriptLanguageVisitor):
         self.context_manager.define(LabelSymbol(f"Label.end", VoidType(), next_label))
 
         # Emit the start label
-        self.ir_manager.emit(f"\n\t{start_label}: ")
+        self.ir_manager.emit(f"\n\t{start_label}:\n")
 
         self.visit(ctx.expression())  # Visit the condition
 
@@ -379,13 +375,13 @@ class TacGenerator(CompiScriptLanguageVisitor):
 
                         # Emit TAC for assignment
                         temp_value = self.ir_manager.create_temp(value)
-                        self.ir_manager.emit(f"\t{temp_address} = {temp_value};\n")
+                        self.ir_manager.emit(f"\t{temp_address} = {temp_value} ;\n")
         else:
             var_name = ctx.IDENTIFIER().getText()
             value = self.visit(ctx.assignment())  # Visit the assignment on the right-hand side
 
             # Emit TAC for assignment
-            self.ir_manager.emit(f"\t{var_name} = {value};\n")
+            self.ir_manager.emit(f"\t{var_name} = {value} ;\n")
             return var_name
 
 
@@ -636,23 +632,23 @@ class TacGenerator(CompiScriptLanguageVisitor):
                 for arg in arguments:
                     temp = self.ir_manager.get_new_temp()
                     arg_temps.append(temp)
-                    self.ir_manager.emit(f"\t{temp} = {arg};\n")
+                    self.ir_manager.emit(f"\t{temp} = {arg} ;\n")
 
                 # Emit the push parameters
                 for arg_temp in arg_temps:
-                    self.ir_manager.emit(f"\tPushParam {arg_temp};\n")
+                    self.ir_manager.emit(f"\tPushParam {arg_temp} ;\n")
 
                 # Emit the function call
                 temp = self.ir_manager.get_new_temp()
 
                 # Check if the function is the 'main' function
                 if func_name != "main":
-                    self.ir_manager.emit(f"\t{temp} = LCall _{func_name};\n")
+                    self.ir_manager.emit(f"\t{temp} = LCall _{func_name} ;\n")
                 else:
-                    self.ir_manager.emit(f"{temp} = LCall _main;\n")
+                    self.ir_manager.emit(f"{temp} = LCall _main ;\n")
 
                 if ctx.arguments():
-                    self.ir_manager.emit(f"\tPopParams {len(arguments)*4};\n")
+                    self.ir_manager.emit(f"\tPopParams {len(arguments)*4} ;\n")
 
                 primary_value = temp
                 
@@ -663,11 +659,28 @@ class TacGenerator(CompiScriptLanguageVisitor):
                 if primary_value == "this":
                     parameters = list(self.context_manager.get_symbol_table().items())
                     
+                    for i in range(len(parameters)):
+                        temp_size = self.ir_manager.create_temp("4") # Size of
+
+                        # Check if the field exists in the parameters
+                        if parameters[i][0] == member_name and parameters[i][1].__class__ == Parameter:
+
+                            # Compute the offset for the index
+                            temp_index = self.ir_manager.create_temp(str(i))
+
+                            temp_offset = self.ir_manager.create_temp(f"{temp_index} * {temp_size}")  # Offset = index * 4
+
+                            # Calculate the address of arr[index]
+                            tem_pointer = self.ir_manager.create_temp(f"this + {temp_offset}")  # Pointer to arr[index]
+                            temp_address = self.ir_manager.create_temp(f"*({tem_pointer})") # Dereference the pointer
+
+                            primary_value = temp_address
+
+                            break
                         
                     i = i + 2
         
         return primary_value
-
 
     # Visit a parse tree produced by CompiScriptLanguageParser#funAnonCall.
     def visitFunAnonCall(self, ctx:CompiScriptLanguageParser.FunAnonCallContext):
@@ -779,20 +792,20 @@ class TacGenerator(CompiScriptLanguageVisitor):
         for arg in arguments:
             temp = primary_value if arg == f"alloc {len(arguments[1:])*4}" else self.ir_manager.get_new_temp()
             arg_temps.append(temp)
-            self.ir_manager.emit(f"\t{temp} = {arg};\n")
+            self.ir_manager.emit(f"\t{temp} = {arg} ;\n")
 
         # Emit the push parameters
         for arg_temp in arg_temps:
-            self.ir_manager.emit(f"\tPushParam {arg_temp};\n")
+            self.ir_manager.emit(f"\tPushParam {arg_temp} ;\n")
 
         # Emit the function call
         temp = self.ir_manager.get_new_temp()
 
         # Check if the function is the 'main' function
-        self.ir_manager.emit(f"\t{temp} = LCall _{class_name}.init;\n")
+        self.ir_manager.emit(f"\t{temp} = LCall _{class_name}.init ;\n")
 
         if ctx.arguments():
-            self.ir_manager.emit(f"\tPopParams {len(arguments)*4};\n")
+            self.ir_manager.emit(f"\tPopParams {len(arguments)*4} ;\n")
 
         self.context_manager.exit_context()  # Exit the context for the 'init' method
         self.context_manager.enter_context(main_context)  # Return to the main context
@@ -834,7 +847,7 @@ class TacGenerator(CompiScriptLanguageVisitor):
 
         for i, param_name in parameters:
             # Assign each parameter a temporary variable
-            self.ir_manager.emit(f"\t{param_name} = param{i};\n")
+            self.ir_manager.emit(f"\t{param_name} = param{i} ;\n")
                 
 
         # Visit the function body (block)
@@ -843,7 +856,7 @@ class TacGenerator(CompiScriptLanguageVisitor):
         # Exit the function context
         self.context_manager.exit_context()
 
-        self.ir_manager.emit(f"\tEndFunc;\n")
+        self.ir_manager.emit(f"\tEndFunc ;\n")
 
 
     # Visit a parse tree produced by CompiScriptLanguageParser#parameters.
@@ -882,7 +895,7 @@ class TacGenerator(CompiScriptLanguageVisitor):
         value = self.visit(ctx.expression())    # Value to be assigned (arr[index] = value)
 
         temp_value = self.ir_manager.create_temp(value)
-        self.ir_manager.emit(f"\t{temp_address} = {temp_value};\n")
+        self.ir_manager.emit(f"\t{temp_address} = {temp_value} ;\n")
     
     # Visit a parse tree produced by CompiScriptLanguageParser#arrayAccess.
     def visitArrayAccess(self, ctx: CompiScriptLanguageParser.ArrayAccessContext):
